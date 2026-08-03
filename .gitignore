@@ -44,3 +44,6 @@ BACKLOG.md
 DEVELOPMENT_SETUP.md
 SYSTEM_CONTEXT.md
 RP-Prompt-Template.md
+
+# ── Docker local overrides ─────────────────────────────────────
+docker/*.env
