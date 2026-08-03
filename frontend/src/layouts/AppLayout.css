@@ -1,0 +1,110 @@
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-4);
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.app-nav__brand {
+  font-weight: 700;
+  font-size: var(--text-lg);
+  color: var(--color-primary);
+}
+
+.app-nav__hamburger {
+  display: block;
+  background: none;
+  border: none;
+  font-size: var(--text-xl);
+  cursor: pointer;
+  color: var(--color-text);
+  padding: var(--spacing-2);
+}
+
+.app-nav__links {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--color-surface);
+  flex-direction: column;
+  padding: var(--spacing-4);
+  gap: var(--spacing-4);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+}
+
+.app-nav__links--open {
+  display: flex;
+}
+
+.app-nav__links a,
+.app-nav__logout {
+  text-decoration: none;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  padding: var(--spacing-2) 0;
+  transition: color 0.2s ease;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: var(--text-base);
+  font-family: var(--font-sans);
+  cursor: pointer;
+}
+
+.app-nav__links a:hover,
+.app-nav__logout:hover {
+  color: var(--color-primary-hover);
+}
+
+.app-nav__links a.active {
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.app-content {
+  flex: 1;
+  padding: var(--spacing-4);
+  width: 100%;
+  overflow-x: hidden;
+}
+
+@media (min-width: 768px) {
+  .app-nav__hamburger {
+    display: none;
+  }
+
+  .app-nav__links {
+    display: flex;
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    background-color: transparent;
+    padding: 0;
+    gap: var(--spacing-6);
+    border-bottom: none;
+    box-shadow: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-content {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: var(--spacing-8);
+  }
+}

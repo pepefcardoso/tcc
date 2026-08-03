@@ -10,7 +10,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "echo 'Linting stub'",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write src/ index.html",
+    "format:check": "prettier --check src/ index.html",
     "test": "vitest run"
   },
   "dependencies": {
@@ -19,10 +22,17 @@
     "react-router-dom": "^6.23.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@testing-library/jest-dom": "^6.4.5",
     "@testing-library/react": "^15.0.7",
     "@vitejs/plugin-react": "^4.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.9.0",
     "jsdom": "^24.0.0",
+    "prettier": "^3.9.6",
     "vite": "^5.2.11",
     "vitest": "^1.6.0"
   }

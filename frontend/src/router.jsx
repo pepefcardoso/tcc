@@ -4,14 +4,25 @@ import DashboardPage from './pages/DashboardPage.jsx';
 import AthletesPage from './pages/AthletesPage.jsx';
 import SessionsPage from './pages/SessionsPage.jsx';
 import AthleteDetailPage from './pages/AthleteDetailPage.jsx';
+import AppLayout from './layouts/AppLayout.jsx';
+import AuthGuardPlaceholder from './components/AuthGuardPlaceholder.jsx';
 
 const router = createBrowserRouter([
-  { path: '/',          element: <Navigate to="/dashboard" replace /> },
-  { path: '/login',     element: <LoginPage /> },
-  { path: '/dashboard', element: <DashboardPage /> },
-  { path: '/athletes',  element: <AthletesPage /> },
-  { path: '/athletes/:id', element: <AthleteDetailPage /> },
-  { path: '/sessions',  element: <SessionsPage /> },
+  { path: '/login', element: <LoginPage /> },
+  {
+    element: (
+      <AuthGuardPlaceholder>
+        <AppLayout />
+      </AuthGuardPlaceholder>
+    ),
+    children: [
+      { path: '/', element: <Navigate to="/dashboard" replace /> },
+      { path: '/dashboard', element: <DashboardPage /> },
+      { path: '/athletes', element: <AthletesPage /> },
+      { path: '/athletes/:id', element: <AthleteDetailPage /> },
+      { path: '/sessions', element: <SessionsPage /> },
+    ],
+  },
 ]);
 
 export default router;
