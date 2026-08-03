@@ -9,8 +9,6 @@ Web platform (Backend + Dashboard) for processing and visualizing GPS+IMU wearab
 - **Frontend**: Vite + React (SPA Dashboard)
 - **Infrastructure**: Docker Compose (for both local dev and production deployment on VPS)
 
-See [/docs/SYSTEM_CONTEXT.md](/docs/SYSTEM_CONTEXT.md) for detailed architectural constraints.
-
 ## Local Development Quickstart
 
 1. Clone the repository
@@ -23,16 +21,6 @@ See [/docs/SYSTEM_CONTEXT.md](/docs/SYSTEM_CONTEXT.md) for detailed architectura
 6. Start dev servers:
    - Backend: `cd backend && npm run dev`
    - Frontend: `cd frontend && npm run dev`
-
-See [DEVELOPMENT_SETUP.md](/DEVELOPMENT_SETUP.md) for full instructions and common pitfalls.
-
-## Documentation
-
-All project documentation is located in the root or `docs/` directory:
-- [SYSTEM_CONTEXT.md](/SYSTEM_CONTEXT.md)
-- [API_CONTRACT.md](/API_CONTRACT.md)
-- [DEVELOPMENT_SETUP.md](/DEVELOPMENT_SETUP.md)
-- [BACKLOG.md](/BACKLOG.md)
 
 ## License
 MIT License
