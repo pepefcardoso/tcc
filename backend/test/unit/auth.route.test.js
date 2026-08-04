@@ -22,6 +22,8 @@ const { default: authRouter } = await import('../../src/routes/auth.js');
 const app = express();
 app.use(express.json());
 app.use('/api/auth', authRouter);
+const { errorHandler } = await import('../../src/middleware/errorHandler.js');
+app.use(errorHandler);
 
 describe('POST /api/auth/login', () => {
   beforeEach(() => {
@@ -140,10 +142,10 @@ describe('POST /api/auth/login', () => {
       .send({ email: 'error@example.com', password: 'password123' });
 
     expect(res.status).toBe(500);
-    expect(res.body).toEqual({
+    expect(res.body).toEqual(expect.objectContaining({
       error: 'internal_error',
-      message: 'An unexpected error occurred during login',
-    });
+      message: 'An unexpected internal server error occurred',
+    }));
 
     consoleSpy.mockRestore();
   });

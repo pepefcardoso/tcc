@@ -5,7 +5,7 @@ import { signUserToken } from '../utils/jwt.js';
 
 const router = Router();
 
-router.post('/login', async (req, res) => {
+router.post('/login', async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -45,12 +45,7 @@ router.post('/login', async (req, res) => {
       },
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('[Auth Route Error]', error);
-    return res.status(500).json({
-      error: 'internal_error',
-      message: 'An unexpected error occurred during login',
-    });
+    return next(error);
   }
 });
 

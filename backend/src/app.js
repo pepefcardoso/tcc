@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { router } from './routes/index.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
@@ -13,5 +14,7 @@ app.use('/', router);
 app.use((req, res) => {
   res.status(404).json({ error: 'not_found', message: 'Route not found' });
 });
+
+app.use(errorHandler);
 
 export default app;
