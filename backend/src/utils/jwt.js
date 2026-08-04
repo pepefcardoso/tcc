@@ -34,3 +34,36 @@ export function verifyUserToken(token) {
   }
   return decoded;
 }
+
+/**
+ * Signs a long-lived device service token.
+ * 
+ * @param {Object} payload 
+ * @param {string} payload.sub - The device identifier (e.g. MAC address or firmware UUID)
+ * @returns {string} The signed JWT string
+ */
+export function signDeviceToken({ sub }) {
+  return jwt.sign(
+    { sub, type: 'device' },
+    env.JWT_DEVICE_SECRET,
+    { expiresIn: env.JWT_DEVICE_EXPIRES_IN }
+  );
+}
+
+/**
+ * Verifies a device service token.
+ * 
+ * @param {string} token - The JWT string to verify
+ * @returns {Object} The decoded token payload containing { sub, type, iat, exp }
+ * @throws {JsonWebTokenError} If the token is invalid, tampered, or not a 'device' token
+ * @throws {TokenExpiredError} If the token is expired
+ */
+export function verifyDeviceToken(token) {
+  const decoded = jwt.verify(token, env.JWT_DEVICE_SECRET);
+  if (decoded.type !== 'device') {
+    const err = new Error('Invalid token type');
+    err.name = 'JsonWebTokenError';
+    throw err;
+  }
+  return decoded;
+}

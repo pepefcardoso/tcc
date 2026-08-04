@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import jwt from 'jsonwebtoken';
-import { signUserToken, verifyUserToken } from '../../src/utils/jwt.js';
+import { signUserToken, verifyUserToken, signDeviceToken, verifyDeviceToken } from '../../src/utils/jwt.js';
 import { env } from '../../src/config/env.js';
 
 describe('JWT Utility (User Tokens)', () => {
@@ -66,5 +66,70 @@ describe('JWT Utility (User Tokens)', () => {
       sub: 'uuid-123',
       role: 'tecnico',
     });
+  });
+
+  it('verifyUserToken on a token signed with device secret (type: "device") throws', () => {
+    const deviceToken = signDeviceToken({ sub: 'device-id' });
+    expect(() => verifyUserToken(deviceToken)).toThrow('invalid signature');
+  });
+});
+
+describe('JWT Utility (Device Tokens)', () => {
+  const mockPayload = { sub: 'esp32-device-001' };
+
+  it('signDeviceToken returns a non-empty string', () => {
+    const token = signDeviceToken(mockPayload);
+    expect(typeof token).toBe('string');
+    expect(token.length).toBeGreaterThan(0);
+  });
+
+  it('verifyDeviceToken on a freshly-signed token decodes { sub, type } correctly', () => {
+    const token = signDeviceToken(mockPayload);
+    const decoded = verifyDeviceToken(token);
+
+    expect(decoded.sub).toBe(mockPayload.sub);
+    expect(decoded.type).toBe('device');
+    expect(decoded.exp).toBeDefined();
+    expect(decoded.iat).toBeDefined();
+  });
+
+  it('verifyDeviceToken on an expired token throws TokenExpiredError', () => {
+    const expiredToken = jwt.sign(
+      { sub: mockPayload.sub, type: 'device' },
+      env.JWT_DEVICE_SECRET,
+      { expiresIn: 0 }
+    );
+
+    expect(() => verifyDeviceToken(expiredToken)).toThrow('jwt expired');
+    try {
+      verifyDeviceToken(expiredToken);
+    } catch (err) {
+      expect(err.name).toBe('TokenExpiredError');
+    }
+  });
+
+  it('verifyDeviceToken on a tampered token (wrong secret) throws JsonWebTokenError', () => {
+    const tamperedToken = jwt.sign(
+      { sub: mockPayload.sub, type: 'device' },
+      'wrong-device-secret-key-1234567890'
+    );
+
+    expect(() => verifyDeviceToken(tamperedToken)).toThrow('invalid signature');
+  });
+
+  it('verifyDeviceToken on a token signed with user secret (type: "user") throws', () => {
+    const userToken = signUserToken({ sub: 'user-id', role: 'tecnico' });
+    expect(() => verifyDeviceToken(userToken)).toThrow('invalid signature');
+  });
+
+  it("verifyDeviceToken on a token signed with device secret but type: 'user' throws", () => {
+    const wrongTypeToken = jwt.sign({ sub: 'device-id', type: 'user' }, env.JWT_DEVICE_SECRET);
+
+    expect(() => verifyDeviceToken(wrongTypeToken)).toThrow('Invalid token type');
+    try {
+      verifyDeviceToken(wrongTypeToken);
+    } catch (err) {
+      expect(err.name).toBe('JsonWebTokenError');
+    }
   });
 });
