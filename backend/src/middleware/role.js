@@ -1,7 +1,7 @@
 /**
  * Express middleware factory to restrict access based on user role.
  * Must be used after authMiddleware.
- * 
+ *
  * @param {...string} roles - The allowed roles (e.g. 'tecnico', 'preparador', 'atleta')
  * @returns {Function} Express middleware function
  */

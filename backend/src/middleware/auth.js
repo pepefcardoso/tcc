@@ -40,7 +40,7 @@ export function authMiddleware(req, res, next) {
           sub: decodedDevice.sub,
         };
         return next();
-      } catch (deviceErr) {
+      } catch {
         return res.status(401).json({
           error: 'unauthorized',
           message: 'Invalid or expired token',

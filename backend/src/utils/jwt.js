@@ -3,23 +3,21 @@ import { env } from '../config/env.js';
 
 /**
  * Signs a short-lived user session token.
- * 
- * @param {Object} payload 
+ *
+ * @param {Object} payload
  * @param {string} payload.sub - The user UUID
  * @param {string} payload.role - The user role (tecnico|preparador|atleta)
  * @returns {string} The signed JWT string
  */
 export function signUserToken({ sub, role }) {
-  return jwt.sign(
-    { sub, role, type: 'user' },
-    env.JWT_USER_SECRET,
-    { expiresIn: env.JWT_USER_EXPIRES_IN }
-  );
+  return jwt.sign({ sub, role, type: 'user' }, env.JWT_USER_SECRET, {
+    expiresIn: env.JWT_USER_EXPIRES_IN,
+  });
 }
 
 /**
  * Verifies a user session token.
- * 
+ *
  * @param {string} token - The JWT string to verify
  * @returns {Object} The decoded token payload containing { sub, role, type, iat, exp }
  * @throws {JsonWebTokenError} If the token is invalid, tampered, or not a 'user' token
@@ -37,22 +35,20 @@ export function verifyUserToken(token) {
 
 /**
  * Signs a long-lived device service token.
- * 
- * @param {Object} payload 
+ *
+ * @param {Object} payload
  * @param {string} payload.sub - The device identifier (e.g. MAC address or firmware UUID)
  * @returns {string} The signed JWT string
  */
 export function signDeviceToken({ sub }) {
-  return jwt.sign(
-    { sub, type: 'device' },
-    env.JWT_DEVICE_SECRET,
-    { expiresIn: env.JWT_DEVICE_EXPIRES_IN }
-  );
+  return jwt.sign({ sub, type: 'device' }, env.JWT_DEVICE_SECRET, {
+    expiresIn: env.JWT_DEVICE_EXPIRES_IN,
+  });
 }
 
 /**
  * Verifies a device service token.
- * 
+ *
  * @param {string} token - The JWT string to verify
  * @returns {Object} The decoded token payload containing { sub, type, iat, exp }
  * @throws {JsonWebTokenError} If the token is invalid, tampered, or not a 'device' token
