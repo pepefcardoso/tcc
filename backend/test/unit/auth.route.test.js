@@ -36,10 +36,10 @@ describe('POST /api/auth/login', () => {
       .send({ password: 'password123' });
 
     expect(res.status).toBe(422);
-    expect(res.body).toEqual({
+    expect(res.body).toEqual(expect.objectContaining({
       error: 'validation_error',
-      message: 'Email and password are required and must be strings',
-    });
+      message: 'Validation failed: email: Invalid input: expected string, received undefined',
+    }));
   });
 
   it('2. returns 422 if password is missing', async () => {
@@ -48,10 +48,10 @@ describe('POST /api/auth/login', () => {
       .send({ email: 'test@example.com' });
 
     expect(res.status).toBe(422);
-    expect(res.body).toEqual({
+    expect(res.body).toEqual(expect.objectContaining({
       error: 'validation_error',
-      message: 'Email and password are required and must be strings',
-    });
+      message: 'Validation failed: password: Invalid input: expected string, received undefined',
+    }));
   });
 
   it('3. returns 422 if body is empty', async () => {
@@ -61,6 +61,8 @@ describe('POST /api/auth/login', () => {
 
     expect(res.status).toBe(422);
     expect(res.body.error).toBe('validation_error');
+    expect(res.body.message).toContain('email: Invalid input: expected string, received undefined');
+    expect(res.body.message).toContain('password: Invalid input: expected string, received undefined');
   });
 
   it('4. returns 401 if user is not found', async () => {

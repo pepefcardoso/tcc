@@ -2,19 +2,14 @@ import { Router } from 'express';
 import * as userRepository from '../repositories/userRepository.js';
 import { comparePassword } from '../utils/password.js';
 import { signUserToken } from '../utils/jwt.js';
+import { validate } from '../middleware/validate.js';
+import { loginSchema } from '../schemas/auth.schema.js';
 
 const router = Router();
 
-router.post('/login', async (req, res, next) => {
+router.post('/login', validate(loginSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
-    if (!email || typeof email !== 'string' || !password || typeof password !== 'string') {
-      return res.status(422).json({
-        error: 'validation_error',
-        message: 'Email and password are required and must be strings',
-      });
-    }
 
     const user = await userRepository.findByEmail(email);
 
