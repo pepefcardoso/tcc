@@ -1,3 +1,4 @@
+import path from 'path';
 import { Router } from 'express';
 import multer from 'multer';
 import { authMiddleware, requireDevice } from '../middleware/auth.js';
@@ -5,6 +6,7 @@ import { upload } from '../middleware/multerUpload.js';
 import { validate } from '../middleware/validate.js';
 import { uploadBodySchema } from '../schemas/upload.schema.js';
 import { AppError } from '../middleware/errorHandler.js';
+import * as sessionRepository from '../repositories/sessionRepository.js';
 
 const router = Router();
 
@@ -37,6 +39,17 @@ router.post(
     try {
       if (!req.file) {
         return next(new AppError(422, 'validation_error', 'File field "file" is required'));
+      }
+
+      const originalname = path.basename(req.file.originalname);
+      const existingSession = await sessionRepository.findByFilename(originalname);
+
+      if (existingSession) {
+        return res.status(200).json({
+          session_id: existingSession.id,
+          status: 'duplicate_skipped',
+          metrics: existingSession.metrics,
+        });
       }
 
       return res.status(200).json({

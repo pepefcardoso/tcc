@@ -7,6 +7,10 @@ jest.unstable_mockModule('../../src/utils/jwt.js', () => ({
   verifyDeviceToken: jest.fn(),
 }));
 
+jest.unstable_mockModule('../../src/repositories/sessionRepository.js', () => ({
+  findByFilename: jest.fn(),
+}));
+
 const mockUploadMiddleware = jest.fn((req, res, next) => next());
 
 jest.unstable_mockModule('../../src/middleware/multerUpload.js', () => ({
@@ -17,6 +21,7 @@ jest.unstable_mockModule('../../src/middleware/multerUpload.js', () => ({
 
 const jwtUtil = await import('../../src/utils/jwt.js');
 const multerUpload = await import('../../src/middleware/multerUpload.js');
+const sessionRepository = await import('../../src/repositories/sessionRepository.js');
 const { default: sessionsRouter } = await import('../../src/routes/sessions.js');
 const { authMiddleware } = await import('../../src/middleware/auth.js');
 const { errorHandler } = await import('../../src/middleware/errorHandler.js');
@@ -29,6 +34,7 @@ app.use(errorHandler);
 describe('POST /api/sessions/upload', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    sessionRepository.findByFilename.mockResolvedValue(null);
     mockUploadMiddleware.mockImplementation((req, res, next) => {
       req.file = {
         path: '/tmp/uploads/test_session.ndjson',
@@ -141,7 +147,7 @@ describe('POST /api/sessions/upload', () => {
     jwtUtil.verifyDeviceToken.mockReturnValue({ sub: 'device-123' });
 
     mockUploadMiddleware.mockImplementation((req, res, next) => {
-      req.file = { path: '/tmp/uploads/SESSAO_20260805_120000_device123.ndjson' };
+      req.file = { path: '/tmp/uploads/SESSAO_20260805_120000_device123.ndjson', originalname: 'SESSAO_20260805_120000_device123.ndjson' };
       req.body = { athlete_id: '123e4567-e89b-12d3-a456-426614174000' };
       next();
     });
@@ -230,6 +236,105 @@ describe('POST /api/sessions/upload', () => {
     expect(res.status).toBe(500);
     expect(res.body.error).toBe('internal_error');
 
+    consoleSpy.mockRestore();
+  });
+
+  it('10. returns 200 with duplicate_skipped and existing metrics if duplicate session with metrics is found', async () => {
+    jwtUtil.verifyUserToken.mockImplementation(() => {
+      const err = new Error('Invalid token type');
+      err.name = 'JsonWebTokenError';
+      throw err;
+    });
+    jwtUtil.verifyDeviceToken.mockReturnValue({ sub: 'device-123' });
+
+    mockUploadMiddleware.mockImplementation((req, res, next) => {
+      req.file = { path: '/tmp/uploads/SESSAO_20260805_120000_device123.ndjson', originalname: 'SESSAO_20260805_120000_device123.ndjson' };
+      req.body = { athlete_id: '123e4567-e89b-12d3-a456-426614174000' };
+      next();
+    });
+
+    const mockExistingSession = {
+      id: 'session-123',
+      source_filename: 'SESSAO_20260805_120000_device123.ndjson',
+      metrics: {
+        total_distance_m: 5000.5,
+        max_speed_kmh: 25.2,
+        sprint_count: 5,
+        player_load: 150.75,
+      },
+    };
+    sessionRepository.findByFilename.mockResolvedValue(mockExistingSession);
+
+    const res = await request(app)
+      .post('/api/sessions/upload')
+      .set('Authorization', 'Bearer device-token');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      session_id: 'session-123',
+      status: 'duplicate_skipped',
+      metrics: mockExistingSession.metrics,
+    });
+    expect(sessionRepository.findByFilename).toHaveBeenCalledWith('SESSAO_20260805_120000_device123.ndjson');
+  });
+
+  it('11. returns 200 with duplicate_skipped and metrics=null if duplicate session exists but metrics are null', async () => {
+    jwtUtil.verifyUserToken.mockImplementation(() => {
+      const err = new Error('Invalid token type');
+      err.name = 'JsonWebTokenError';
+      throw err;
+    });
+    jwtUtil.verifyDeviceToken.mockReturnValue({ sub: 'device-123' });
+
+    mockUploadMiddleware.mockImplementation((req, res, next) => {
+      req.file = { path: '/tmp/uploads/SESSAO_20260805_120000_device123.ndjson', originalname: 'SESSAO_20260805_120000_device123.ndjson' };
+      req.body = { athlete_id: '123e4567-e89b-12d3-a456-426614174000' };
+      next();
+    });
+
+    const mockExistingSession = {
+      id: 'session-123',
+      source_filename: 'SESSAO_20260805_120000_device123.ndjson',
+      metrics: null,
+    };
+    sessionRepository.findByFilename.mockResolvedValue(mockExistingSession);
+
+    const res = await request(app)
+      .post('/api/sessions/upload')
+      .set('Authorization', 'Bearer device-token');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      session_id: 'session-123',
+      status: 'duplicate_skipped',
+      metrics: null,
+    });
+  });
+
+  it('12. returns 500 if sessionRepository.findByFilename throws unexpectedly', async () => {
+    jwtUtil.verifyUserToken.mockImplementation(() => {
+      const err = new Error('Invalid token type');
+      err.name = 'JsonWebTokenError';
+      throw err;
+    });
+    jwtUtil.verifyDeviceToken.mockReturnValue({ sub: 'device-123' });
+
+    mockUploadMiddleware.mockImplementation((req, res, next) => {
+      req.file = { path: '/tmp/uploads/SESSAO_20260805_120000_device123.ndjson', originalname: 'SESSAO_20260805_120000_device123.ndjson' };
+      req.body = { athlete_id: '123e4567-e89b-12d3-a456-426614174000' };
+      next();
+    });
+
+    sessionRepository.findByFilename.mockRejectedValue(new Error('DB down'));
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await request(app)
+      .post('/api/sessions/upload')
+      .set('Authorization', 'Bearer device-token');
+
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('internal_error');
+    
     consoleSpy.mockRestore();
   });
 });
