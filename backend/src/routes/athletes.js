@@ -30,4 +30,18 @@ router.post(
   }
 );
 
+router.get(
+  '/',
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      const includeInactive = req.query.includeInactive === 'true';
+      const athletes = await athleteRepository.findAll({ includeInactive });
+      return res.status(200).json(athletes);
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
+
 export default router;

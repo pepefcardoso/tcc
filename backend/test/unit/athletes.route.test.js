@@ -4,6 +4,7 @@ import express from 'express';
 
 jest.unstable_mockModule('../../src/repositories/athleteRepository.js', () => ({
   create: jest.fn(),
+  findAll: jest.fn(),
 }));
 
 jest.unstable_mockModule('../../src/utils/jwt.js', () => ({
@@ -159,5 +160,98 @@ describe('POST /api/athletes', () => {
     expect(res.body.error).toBe('internal_error');
     
     consoleSpy.mockRestore();
+  });
+});
+
+describe('GET /api/athletes', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('1. returns 401 if missing authorization header', async () => {
+    const res = await request(app).get('/api/athletes');
+
+    expect(res.status).toBe(401);
+    expect(res.body.error).toBe('unauthorized');
+  });
+
+  it('2. returns 200 with active athletes if no query param provided (default)', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'atleta' });
+    const mockAthletes = [{ id: '1', name: 'Athlete 1' }];
+    athleteRepository.findAll.mockResolvedValue(mockAthletes);
+
+    const res = await request(app)
+      .get('/api/athletes')
+      .set('Authorization', 'Bearer valid-token');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(mockAthletes);
+    expect(athleteRepository.findAll).toHaveBeenCalledWith({ includeInactive: false });
+  });
+
+  it('3. returns 200 and passes includeInactive: true', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'atleta' });
+    const mockAthletes = [{ id: '1', name: 'Athlete 1' }, { id: '2', name: 'Inactive Athlete' }];
+    athleteRepository.findAll.mockResolvedValue(mockAthletes);
+
+    const res = await request(app)
+      .get('/api/athletes?includeInactive=true')
+      .set('Authorization', 'Bearer valid-token');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(mockAthletes);
+    expect(athleteRepository.findAll).toHaveBeenCalledWith({ includeInactive: true });
+  });
+
+  it('4. returns 200 and passes includeInactive: false when explicitly false', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'atleta' });
+    athleteRepository.findAll.mockResolvedValue([]);
+
+    const res = await request(app)
+      .get('/api/athletes?includeInactive=false')
+      .set('Authorization', 'Bearer valid-token');
+
+    expect(res.status).toBe(200);
+    expect(athleteRepository.findAll).toHaveBeenCalledWith({ includeInactive: false });
+  });
+
+  it('5. treats any includeInactive value other than true as false', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'atleta' });
+    athleteRepository.findAll.mockResolvedValue([]);
+
+    const res = await request(app)
+      .get('/api/athletes?includeInactive=yes')
+      .set('Authorization', 'Bearer valid-token');
+
+    expect(res.status).toBe(200);
+    expect(athleteRepository.findAll).toHaveBeenCalledWith({ includeInactive: false });
+  });
+
+  it('6. returns 500 if repository throws unexpected error', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'atleta' });
+    athleteRepository.findAll.mockRejectedValue(new Error('DB failure'));
+    
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await request(app)
+      .get('/api/athletes')
+      .set('Authorization', 'Bearer valid-token');
+
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('internal_error');
+    
+    consoleSpy.mockRestore();
+  });
+
+  it('7. returns 200 with empty array if no athletes exist', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'atleta' });
+    athleteRepository.findAll.mockResolvedValue([]);
+
+    const res = await request(app)
+      .get('/api/athletes')
+      .set('Authorization', 'Bearer valid-token');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
   });
 });
