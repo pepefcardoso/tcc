@@ -63,7 +63,7 @@ export async function update(id, fields, pool = defaultPool) {
   const allowedFields = ['name', 'position', 'birth_date', 'weight_kg', 'height_m', 'active'];
   const setClauses = [];
   const values = [];
-  let paramIndex = 2; // $1 is reserved for id
+  let paramIndex = 2;
 
   for (const [key, value] of Object.entries(fields)) {
     if (allowedFields.includes(key)) {
@@ -74,7 +74,7 @@ export async function update(id, fields, pool = defaultPool) {
   }
 
   if (setClauses.length === 0) {
-    return findById(id, pool); // Nothing to update
+    return findById(id, pool);
   }
 
   const queryText = `

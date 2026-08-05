@@ -10,7 +10,7 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
-    "test:integration": "jest --config jest.integration.config.js",
+    "test:integration": "node --experimental-vm-modules node_modules/.bin/jest --config jest.integration.config.js",
     "lint": "eslint src/",
     "format": "prettier --write src/",
     "migrate": "node scripts/migrate.js",

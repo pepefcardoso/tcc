@@ -304,7 +304,7 @@ describe('PATCH /api/athletes/:id', () => {
     const res = await request(app)
       .patch('/api/athletes/123')
       .set('Authorization', 'Bearer valid-token')
-      .send({ weight_kg: '75.5' }); // string instead of number
+      .send({ weight_kg: '75.5' });
 
     expect(res.status).toBe(422);
     expect(res.body.error).toBe('validation_error');

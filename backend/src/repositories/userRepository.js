@@ -58,7 +58,7 @@ export async function update(id, fields, pool = defaultPool) {
   const allowedFields = ['email', 'password_hash', 'role', 'athlete_id'];
   const setClauses = [];
   const values = [];
-  let paramIndex = 2; // $1 is reserved for id
+  let paramIndex = 2;
 
   for (const [key, value] of Object.entries(fields)) {
     if (allowedFields.includes(key)) {

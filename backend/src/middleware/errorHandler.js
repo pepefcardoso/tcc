@@ -9,7 +9,6 @@ export class AppError extends Error {
 
 // eslint-disable-next-line no-unused-vars
 export function errorHandler(err, req, res, next) {
-  // Already-responded (streaming edge case)
   if (res.headersSent) return next(err);
 
   const isDev = process.env.NODE_ENV !== 'production';
