@@ -5,6 +5,8 @@ import express from 'express';
 jest.unstable_mockModule('../../src/repositories/athleteRepository.js', () => ({
   create: jest.fn(),
   findAll: jest.fn(),
+  update: jest.fn(),
+  findById: jest.fn(),
 }));
 
 jest.unstable_mockModule('../../src/utils/jwt.js', () => ({
@@ -253,5 +255,160 @@ describe('GET /api/athletes', () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
+  });
+});
+
+describe('PATCH /api/athletes/:id', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('1. returns 401 if missing authorization header', async () => {
+    const res = await request(app)
+      .patch('/api/athletes/123')
+      .send({ name: 'Updated Name' });
+
+    expect(res.status).toBe(401);
+    expect(res.body.error).toBe('unauthorized');
+  });
+
+  it('2. returns 403 if valid user token, role = atleta', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'atleta' });
+
+    const res = await request(app)
+      .patch('/api/athletes/123')
+      .set('Authorization', 'Bearer valid-token')
+      .send({ name: 'Updated Name' });
+
+    expect(res.status).toBe(403);
+    expect(res.body.error).toBe('forbidden');
+  });
+
+  it('3. returns 422 if valid token (tecnico), invalid birth_date format', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'tecnico' });
+
+    const res = await request(app)
+      .patch('/api/athletes/123')
+      .set('Authorization', 'Bearer valid-token')
+      .send({ birth_date: 'invalid-date' });
+
+    expect(res.status).toBe(422);
+    expect(res.body.error).toBe('validation_error');
+    expect(res.body.message).toContain('birth_date: Must be YYYY-MM-DD');
+  });
+
+  it('4. returns 422 if valid token (tecnico), invalid weight_kg (string)', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'tecnico' });
+
+    const res = await request(app)
+      .patch('/api/athletes/123')
+      .set('Authorization', 'Bearer valid-token')
+      .send({ weight_kg: '75.5' }); // string instead of number
+
+    expect(res.status).toBe(422);
+    expect(res.body.error).toBe('validation_error');
+  });
+
+  it('5. returns 200 with updated athlete if valid partial body (name only) (role = tecnico)', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'tecnico' });
+    
+    const mockUpdated = {
+      id: '123',
+      name: 'New Name',
+      position: 'Atacante',
+      active: true,
+    };
+    athleteRepository.update.mockResolvedValue(mockUpdated);
+
+    const res = await request(app)
+      .patch('/api/athletes/123')
+      .set('Authorization', 'Bearer valid-token')
+      .send({ name: 'New Name' });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(mockUpdated);
+    expect(athleteRepository.update).toHaveBeenCalledWith('123', { name: 'New Name' });
+  });
+
+  it('6. returns 200 with updated athlete if full valid body (role = preparador)', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'preparador' });
+    
+    const mockUpdated = {
+      id: '123',
+      name: 'Full Update',
+      position: 'Goleiro',
+      birth_date: '1995-10-10',
+      weight_kg: 85.0,
+      height_m: 1.90,
+      active: true,
+    };
+    athleteRepository.update.mockResolvedValue(mockUpdated);
+
+    const res = await request(app)
+      .patch('/api/athletes/123')
+      .set('Authorization', 'Bearer valid-token')
+      .send({
+        name: 'Full Update',
+        position: 'Goleiro',
+        birth_date: '1995-10-10',
+        weight_kg: 85.0,
+        height_m: 1.90
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(mockUpdated);
+    expect(athleteRepository.update).toHaveBeenCalledWith('123', {
+        name: 'Full Update',
+        position: 'Goleiro',
+        birth_date: '1995-10-10',
+        weight_kg: 85.0,
+        height_m: 1.90
+    });
+  });
+
+  it('7. returns 404 if athlete id is unknown / repository returns null', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'tecnico' });
+    athleteRepository.update.mockResolvedValue(null);
+
+    const res = await request(app)
+      .patch('/api/athletes/999')
+      .set('Authorization', 'Bearer valid-token')
+      .send({ name: 'Ghost' });
+
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('athlete_not_found');
+  });
+
+  it('8. returns 200 if empty body (repository short-circuits to findById and returns athlete)', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'tecnico' });
+    
+    const mockExisting = { id: '123', name: 'Original Name' };
+    athleteRepository.update.mockResolvedValue(mockExisting);
+
+    const res = await request(app)
+      .patch('/api/athletes/123')
+      .set('Authorization', 'Bearer valid-token')
+      .send({});
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(mockExisting);
+    expect(athleteRepository.update).toHaveBeenCalledWith('123', {});
+  });
+
+  it('9. returns 500 if repository throws unexpected error', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'tecnico' });
+    athleteRepository.update.mockRejectedValue(new Error('DB connection failed'));
+    
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await request(app)
+      .patch('/api/athletes/123')
+      .set('Authorization', 'Bearer valid-token')
+      .send({ name: 'Error Case' });
+
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('internal_error');
+    
+    consoleSpy.mockRestore();
   });
 });
