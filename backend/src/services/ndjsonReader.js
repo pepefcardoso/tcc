@@ -23,7 +23,7 @@ export async function* parseNdjsonStream(readableStream) {
     let record;
     try {
       record = JSON.parse(trimmed);
-    } catch (err) {
+    } catch {
       console.warn('[ndjsonReader] Skipping malformed line:', trimmed.slice(0, 80));
       continue;
     }

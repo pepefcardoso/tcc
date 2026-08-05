@@ -53,3 +53,18 @@ export function authMiddleware(req, res, next) {
     });
   }
 }
+
+/**
+ * Express middleware that restricts a route to device tokens only.
+ * Must be used AFTER authMiddleware.
+ * Returns 401 if req.device is not populated (i.e. a user token was used).
+ */
+export function requireDevice(req, res, next) {
+  if (!req.device) {
+    return res.status(401).json({
+      error: 'unauthorized',
+      message: 'This route requires a device token',
+    });
+  }
+  return next();
+}
