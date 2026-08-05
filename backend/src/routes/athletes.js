@@ -66,4 +66,24 @@ router.patch(
   }
 );
 
+router.delete(
+  '/:id',
+  authMiddleware,
+  requireRole('tecnico', 'preparador'),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const athlete = await athleteRepository.deactivate(id);
+
+      if (!athlete) {
+        return next(new AppError(404, 'athlete_not_found', 'Athlete not found'));
+      }
+
+      return res.status(204).send();
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
+
 export default router;

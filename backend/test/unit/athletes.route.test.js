@@ -7,6 +7,7 @@ jest.unstable_mockModule('../../src/repositories/athleteRepository.js', () => ({
   findAll: jest.fn(),
   update: jest.fn(),
   findById: jest.fn(),
+  deactivate: jest.fn(),
 }));
 
 jest.unstable_mockModule('../../src/utils/jwt.js', () => ({
@@ -409,6 +410,70 @@ describe('PATCH /api/athletes/:id', () => {
     expect(res.status).toBe(500);
     expect(res.body.error).toBe('internal_error');
     
+    consoleSpy.mockRestore();
+  });
+});
+
+describe('DELETE /api/athletes/:id', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('1. returns 401 if missing authorization header', async () => {
+    const res = await request(app).delete('/api/athletes/123');
+    expect(res.status).toBe(401);
+    expect(res.body.error).toBe('unauthorized');
+  });
+
+  it('2. returns 403 if valid user token, role = atleta', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'atleta' });
+    const res = await request(app)
+      .delete('/api/athletes/123')
+      .set('Authorization', 'Bearer valid-token');
+    expect(res.status).toBe(403);
+    expect(res.body.error).toBe('forbidden');
+  });
+
+  it('3. returns 404 if athlete not found (repository returns null)', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'tecnico' });
+    athleteRepository.deactivate.mockResolvedValue(null);
+    const res = await request(app)
+      .delete('/api/athletes/999')
+      .set('Authorization', 'Bearer valid-token');
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('athlete_not_found');
+  });
+
+  it('4. returns 204 with no body on success (role = tecnico)', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'tecnico' });
+    athleteRepository.deactivate.mockResolvedValue({ id: '123', active: false });
+    const res = await request(app)
+      .delete('/api/athletes/123')
+      .set('Authorization', 'Bearer valid-token');
+    expect(res.status).toBe(204);
+    expect(res.body).toEqual({});
+    expect(athleteRepository.deactivate).toHaveBeenCalledWith('123');
+  });
+
+  it('5. returns 204 with no body on success (role = preparador)', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'preparador' });
+    athleteRepository.deactivate.mockResolvedValue({ id: '456', active: false });
+    const res = await request(app)
+      .delete('/api/athletes/456')
+      .set('Authorization', 'Bearer valid-token');
+    expect(res.status).toBe(204);
+    expect(athleteRepository.deactivate).toHaveBeenCalledWith('456');
+  });
+
+  it('6. returns 500 if repository throws unexpected error', async () => {
+    jwtUtil.verifyUserToken.mockReturnValue({ sub: 'user-123', role: 'tecnico' });
+    athleteRepository.deactivate.mockRejectedValue(new Error('DB failure'));
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await request(app)
+      .delete('/api/athletes/123')
+      .set('Authorization', 'Bearer valid-token');
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('internal_error');
     consoleSpy.mockRestore();
   });
 });
