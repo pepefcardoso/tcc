@@ -11,6 +11,10 @@ jest.unstable_mockModule('../../src/repositories/sessionRepository.js', () => ({
   findByFilename: jest.fn(),
 }));
 
+jest.unstable_mockModule('../../src/services/processingQueue.js', () => ({
+  enqueue: jest.fn(async (taskFn) => taskFn()),
+}));
+
 const mockUploadMiddleware = jest.fn((req, res, next) => next());
 
 jest.unstable_mockModule('../../src/middleware/multerUpload.js', () => ({
@@ -22,6 +26,7 @@ jest.unstable_mockModule('../../src/middleware/multerUpload.js', () => ({
 const jwtUtil = await import('../../src/utils/jwt.js');
 const multerUpload = await import('../../src/middleware/multerUpload.js');
 const sessionRepository = await import('../../src/repositories/sessionRepository.js');
+const processingQueue = await import('../../src/services/processingQueue.js');
 const { default: sessionsRouter } = await import('../../src/routes/sessions.js');
 const { authMiddleware } = await import('../../src/middleware/auth.js');
 const { errorHandler } = await import('../../src/middleware/errorHandler.js');
@@ -35,6 +40,7 @@ describe('POST /api/sessions/upload', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     sessionRepository.findByFilename.mockResolvedValue(null);
+    processingQueue.enqueue.mockClear();
     mockUploadMiddleware.mockImplementation((req, res, next) => {
       req.file = {
         path: '/tmp/uploads/test_session.ndjson',
@@ -336,5 +342,28 @@ describe('POST /api/sessions/upload', () => {
     expect(res.body.error).toBe('internal_error');
     
     consoleSpy.mockRestore();
+  });
+
+  it('13. calls enqueue from processingQueue for new uploads', async () => {
+    jwtUtil.verifyUserToken.mockImplementation(() => {
+      const err = new Error('Invalid token type');
+      err.name = 'JsonWebTokenError';
+      throw err;
+    });
+    jwtUtil.verifyDeviceToken.mockReturnValue({ sub: 'device-123' });
+
+    mockUploadMiddleware.mockImplementation((req, res, next) => {
+      req.file = { path: '/tmp/uploads/SESSAO_20260805_120000_device123.ndjson', originalname: 'SESSAO_20260805_120000_device123.ndjson' };
+      req.body = { athlete_id: '123e4567-e89b-12d3-a456-426614174000' };
+      next();
+    });
+
+    const res = await request(app)
+      .post('/api/sessions/upload')
+      .set('Authorization', 'Bearer device-token');
+
+    expect(res.status).toBe(200);
+    expect(processingQueue.enqueue).toHaveBeenCalledTimes(1);
+    expect(processingQueue.enqueue).toHaveBeenCalledWith(expect.any(Function));
   });
 });

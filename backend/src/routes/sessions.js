@@ -7,6 +7,7 @@ import { validate } from '../middleware/validate.js';
 import { uploadBodySchema } from '../schemas/upload.schema.js';
 import { AppError } from '../middleware/errorHandler.js';
 import * as sessionRepository from '../repositories/sessionRepository.js';
+import { enqueue } from '../services/processingQueue.js';
 
 const router = Router();
 
@@ -52,11 +53,15 @@ router.post(
         });
       }
 
-      return res.status(200).json({
-        session_id: null,
-        status: 'queued',
-        file_path: req.file.path,
+      const taskResult = await enqueue(async () => {
+        return {
+          session_id: null,
+          status: 'queued',
+          file_path: req.file.path,
+        };
       });
+
+      return res.status(200).json(taskResult);
     } catch (error) {
       return next(error);
     }
