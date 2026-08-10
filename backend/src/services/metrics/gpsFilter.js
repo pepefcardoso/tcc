@@ -1,7 +1,3 @@
-/**
- * GPS Filter utilities for T-038
- */
-
 let hdopWarnEmitted = false;
 
 /**

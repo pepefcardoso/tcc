@@ -1,9 +1,3 @@
-/**
- * Haversine Calculator (T-040)
- * Computes geodesic distance between two lat/lon pairs using the Sinnott (1984) formula.
- * Also provides an accumulator factory for processing a stream of GPS fixes.
- */
-
 const EARTH_RADIUS_M = 6371000;
 const DEG_TO_RAD = Math.PI / 180;
 
