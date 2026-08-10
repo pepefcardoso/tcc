@@ -21,13 +21,13 @@ export async function findByFilename(filename, pool = defaultPool) {
     WHERE s.source_filename = $1
   `;
   const { rows } = await pool.query(queryText, [filename]);
-  
+
   if (rows.length === 0) {
     return null;
   }
 
   const row = rows[0];
-  
+
   let metrics = null;
   if (row.total_distance_m !== null && row.total_distance_m !== undefined) {
     metrics = {
@@ -70,4 +70,40 @@ export async function create({ athlete_id, source_filename }, pool = defaultPool
     [athlete_id, source_filename]
   );
   return rows[0];
+}
+
+/**
+ * Inserts a batch of GPS samples into the gps_samples hypertable.
+ *
+ * @param {string} sessionId - The UUID of the session
+ * @param {Array<Object>} samples - Array of GPS records { time, latitude, longitude, speed_ms }
+ * @param {import('pg').Pool} pool - Database pool
+ * @returns {Promise<number>} Number of inserted rows
+ */
+export async function insertGpsBatch(sessionId, samples, pool = defaultPool) {
+  if (!samples || samples.length === 0) return 0;
+
+  const columns = 5;
+  const placeholders = samples
+    .map((_, i) => {
+      const base = i * columns;
+      return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5})`;
+    })
+    .join(', ');
+
+  const values = samples.flatMap((s) => [
+    sessionId,
+    new Date(s.time),
+    s.latitude,
+    s.longitude,
+    s.speed_ms,
+  ]);
+
+  const queryText = `
+    INSERT INTO gps_samples (session_id, time, latitude, longitude, speed_ms)
+    VALUES ${placeholders}
+  `;
+
+  const result = await pool.query(queryText, values);
+  return result.rowCount;
 }
