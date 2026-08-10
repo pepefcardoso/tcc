@@ -31,19 +31,15 @@ router.post(
   }
 );
 
-router.get(
-  '/',
-  authMiddleware,
-  async (req, res, next) => {
-    try {
-      const includeInactive = req.query.includeInactive === 'true';
-      const athletes = await athleteRepository.findAll({ includeInactive });
-      return res.status(200).json(athletes);
-    } catch (error) {
-      return next(error);
-    }
+router.get('/', authMiddleware, async (req, res, next) => {
+  try {
+    const includeInactive = req.query.includeInactive === 'true';
+    const athletes = await athleteRepository.findAll({ includeInactive });
+    return res.status(200).json(athletes);
+  } catch (error) {
+    return next(error);
   }
-);
+});
 
 router.patch(
   '/:id',
@@ -54,11 +50,11 @@ router.patch(
     try {
       const { id } = req.params;
       const athlete = await athleteRepository.update(id, req.body);
-      
+
       if (!athlete) {
         return next(new AppError(404, 'athlete_not_found', 'Athlete not found'));
       }
-      
+
       return res.status(200).json(athlete);
     } catch (error) {
       return next(error);

@@ -17,9 +17,9 @@ let _tail = Promise.resolve();
  */
 export function enqueue(taskFn) {
   const result = _tail.then(() => taskFn());
-  
+
   _tail = result.catch(() => {});
-  
+
   return result;
 }
 

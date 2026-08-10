@@ -32,10 +32,11 @@ router.post(
   '/upload',
   authMiddleware,
   requireDevice,
-  (req, res, next) => upload.single('file')(req, res, (err) => {
-    if (err) return handleMulterError(err, req, res, next);
-    return next();
-  }),
+  (req, res, next) =>
+    upload.single('file')(req, res, (err) => {
+      if (err) return handleMulterError(err, req, res, next);
+      return next();
+    }),
   validate(uploadBodySchema),
   async (req, res, next) => {
     try {
