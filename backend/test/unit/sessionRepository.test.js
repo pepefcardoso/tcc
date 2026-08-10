@@ -127,4 +127,80 @@ describe('SessionRepository', () => {
       expect(queryValues[14]).toBe(3.3);
     });
   });
+
+  describe('insertImuBatch', () => {
+    it('returns 0 immediately if samples array is empty', async () => {
+      const result = await sessionRepository.insertImuBatch('s1', [], mockPool);
+      expect(result).toBe(0);
+      expect(mockPool.query).not.toHaveBeenCalled();
+    });
+
+    it('executes parameterized multi-row insert for a single sample', async () => {
+      mockPool.query.mockResolvedValue({ rowCount: 1 });
+
+      const samples = [
+        {
+          time: 1700000000010,
+          ac_x: 0.01,
+          ac_y: 0.02,
+          ac_z: 0.98,
+          gy_x: 0.1,
+          gy_y: 0.0,
+          gy_z: 0.0,
+        },
+      ];
+
+      const result = await sessionRepository.insertImuBatch('s1', samples, mockPool);
+
+      expect(result).toBe(1);
+      expect(mockPool.query).toHaveBeenCalledTimes(1);
+
+      const queryText = mockPool.query.mock.calls[0][0];
+      const queryValues = mockPool.query.mock.calls[0][1];
+
+      expect(queryText).toContain('INSERT INTO imu_samples');
+      expect(queryText).toContain('VALUES ($1, $2, $3, $4, $5, $6, $7, $8)');
+
+      expect(queryValues).toHaveLength(8);
+      expect(queryValues[0]).toBe('s1');
+      expect(queryValues[1]).toBeInstanceOf(Date);
+      expect(queryValues[1].getTime()).toBe(1700000000010);
+      expect(queryValues[2]).toBe(0.01);
+      expect(queryValues[3]).toBe(0.02);
+      expect(queryValues[4]).toBe(0.98);
+      expect(queryValues[5]).toBe(0.1);
+      expect(queryValues[6]).toBe(0.0);
+      expect(queryValues[7]).toBe(0.0);
+    });
+
+    it('executes parameterized multi-row insert for multiple samples', async () => {
+      mockPool.query.mockResolvedValue({ rowCount: 2 });
+
+      const samples = [
+        { time: 1000, ac_x: 0.01, ac_y: 0.02, ac_z: 0.98, gy_x: 0.1, gy_y: 0.0, gy_z: 0.0 },
+        { time: 2000, ac_x: 0.02, ac_y: 0.03, ac_z: 0.97, gy_x: 0.0, gy_y: 0.1, gy_z: 0.0 },
+      ];
+
+      const result = await sessionRepository.insertImuBatch('s1', samples, mockPool);
+
+      expect(result).toBe(2);
+
+      const queryText = mockPool.query.mock.calls[0][0];
+      const queryValues = mockPool.query.mock.calls[0][1];
+
+      expect(queryText).toContain(
+        '($1, $2, $3, $4, $5, $6, $7, $8), ($9, $10, $11, $12, $13, $14, $15, $16)'
+      );
+      expect(queryValues).toHaveLength(16);
+
+      expect(queryValues[8]).toBe('s1');
+      expect(queryValues[9].getTime()).toBe(2000);
+      expect(queryValues[10]).toBe(0.02);
+      expect(queryValues[11]).toBe(0.03);
+      expect(queryValues[12]).toBe(0.97);
+      expect(queryValues[13]).toBe(0.0);
+      expect(queryValues[14]).toBe(0.1);
+      expect(queryValues[15]).toBe(0.0);
+    });
+  });
 });

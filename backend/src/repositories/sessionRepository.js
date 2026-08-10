@@ -107,3 +107,42 @@ export async function insertGpsBatch(sessionId, samples, pool = defaultPool) {
   const result = await pool.query(queryText, values);
   return result.rowCount;
 }
+
+/**
+ * Inserts a batch of IMU samples into the imu_samples hypertable.
+ *
+ * @param {string} sessionId - The UUID of the session
+ * @param {Array<Object>} samples - Array of IMU records { time, ac_x, ac_y, ac_z, gy_x, gy_y, gy_z }
+ * @param {import('pg').Pool} pool - Database pool
+ * @returns {Promise<number>} Number of inserted rows
+ */
+export async function insertImuBatch(sessionId, samples, pool = defaultPool) {
+  if (!samples || samples.length === 0) return 0;
+
+  const columns = 8;
+  const placeholders = samples
+    .map((_, i) => {
+      const base = i * columns;
+      return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7}, $${base + 8})`;
+    })
+    .join(', ');
+
+  const values = samples.flatMap((s) => [
+    sessionId,
+    new Date(s.time),
+    s.ac_x,
+    s.ac_y,
+    s.ac_z,
+    s.gy_x,
+    s.gy_y,
+    s.gy_z,
+  ]);
+
+  const queryText = `
+    INSERT INTO imu_samples (session_id, time, ac_x, ac_y, ac_z, gy_x, gy_y, gy_z)
+    VALUES ${placeholders}
+  `;
+
+  const result = await pool.query(queryText, values);
+  return result.rowCount;
+}
