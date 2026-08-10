@@ -146,3 +146,18 @@ export async function insertImuBatch(sessionId, samples, pool = defaultPool) {
   const result = await pool.query(queryText, values);
   return result.rowCount;
 }
+
+/**
+ * Mark a session as processed.
+ *
+ * @param {string} sessionId - The UUID of the session
+ * @param {import('pg').Pool} pool - Database pool
+ * @returns {Promise<Object>} The updated session row
+ */
+export async function markProcessed(sessionId, pool = defaultPool) {
+  const { rows } = await pool.query(
+    `UPDATE sessions SET sync_status = 'processed' WHERE id = $1 RETURNING *`,
+    [sessionId]
+  );
+  return rows[0] ?? null;
+}

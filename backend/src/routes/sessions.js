@@ -8,6 +8,7 @@ import { uploadBodySchema } from '../schemas/upload.schema.js';
 import { AppError } from '../middleware/errorHandler.js';
 import * as sessionRepository from '../repositories/sessionRepository.js';
 import { enqueue } from '../services/processingQueue.js';
+import * as uploadService from '../services/uploadService.js';
 
 const router = Router();
 
@@ -53,13 +54,13 @@ router.post(
         });
       }
 
-      const taskResult = await enqueue(async () => {
-        return {
-          session_id: null,
-          status: 'queued',
-          file_path: req.file.path,
-        };
-      });
+      const taskResult = await enqueue(() =>
+        uploadService.processUpload({
+          filePath: req.file.path,
+          athleteId: req.body.athlete_id,
+          sourceFilename: originalname,
+        })
+      );
 
       return res.status(200).json(taskResult);
     } catch (error) {

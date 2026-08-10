@@ -15,6 +15,10 @@ jest.unstable_mockModule('../../src/services/processingQueue.js', () => ({
   enqueue: jest.fn(async (taskFn) => taskFn()),
 }));
 
+jest.unstable_mockModule('../../src/services/uploadService.js', () => ({
+  processUpload: jest.fn(),
+}));
+
 const mockUploadMiddleware = jest.fn((req, res, next) => next());
 
 jest.unstable_mockModule('../../src/middleware/multerUpload.js', () => ({
@@ -27,6 +31,7 @@ const jwtUtil = await import('../../src/utils/jwt.js');
 const multerUpload = await import('../../src/middleware/multerUpload.js');
 const sessionRepository = await import('../../src/repositories/sessionRepository.js');
 const processingQueue = await import('../../src/services/processingQueue.js');
+const uploadService = await import('../../src/services/uploadService.js');
 const { default: sessionsRouter } = await import('../../src/routes/sessions.js');
 const { authMiddleware } = await import('../../src/middleware/auth.js');
 const { errorHandler } = await import('../../src/middleware/errorHandler.js');
@@ -144,7 +149,7 @@ describe('POST /api/sessions/upload', () => {
     expect(res.body.message).toContain('athlete_id: athlete_id must be a valid UUID');
   });
 
-  it('6. returns 200 with stub response if everything is valid', async () => {
+  it('6. returns 200 with processed response if everything is valid', async () => {
     jwtUtil.verifyUserToken.mockImplementation(() => {
       const err = new Error('Invalid token type');
       err.name = 'JsonWebTokenError';
@@ -158,15 +163,21 @@ describe('POST /api/sessions/upload', () => {
       next();
     });
 
+    uploadService.processUpload.mockResolvedValue({
+      session_id: 'session-123',
+      status: 'processed',
+      metrics: null,
+    });
+
     const res = await request(app)
       .post('/api/sessions/upload')
       .set('Authorization', 'Bearer device-token');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
-      session_id: null,
-      status: 'queued',
-      file_path: '/tmp/uploads/SESSAO_20260805_120000_device123.ndjson',
+      session_id: 'session-123',
+      status: 'processed',
+      metrics: null,
     });
   });
 
@@ -356,6 +367,12 @@ describe('POST /api/sessions/upload', () => {
       req.file = { path: '/tmp/uploads/SESSAO_20260805_120000_device123.ndjson', originalname: 'SESSAO_20260805_120000_device123.ndjson' };
       req.body = { athlete_id: '123e4567-e89b-12d3-a456-426614174000' };
       next();
+    });
+
+    uploadService.processUpload.mockResolvedValue({
+      session_id: 'session-123',
+      status: 'processed',
+      metrics: null,
     });
 
     const res = await request(app)
