@@ -186,3 +186,31 @@ export async function insertMetrics(sessionId, metrics, pool = defaultPool) {
   );
   return rows[0];
 }
+
+/**
+ * Begin a new database transaction for an upload stream.
+ *
+ * @param {import('pg').Pool} pool - Database pool
+ * @returns {Promise<import('pg').PoolClient>} The checked-out client with an active transaction
+ */
+export async function beginUploadTransaction(pool = defaultPool) {
+  const client = await pool.connect();
+  await client.query('BEGIN');
+  return client;
+}
+
+/**
+ * Rollback a database transaction and release the client back to the pool.
+ *
+ * @param {import('pg').PoolClient} client - The active database client
+ * @returns {Promise<void>}
+ */
+export async function rollbackAndRelease(client) {
+  if (client) {
+    try {
+      await client.query('ROLLBACK');
+    } finally {
+      client.release();
+    }
+  }
+}

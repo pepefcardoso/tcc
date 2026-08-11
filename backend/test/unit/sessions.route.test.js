@@ -383,4 +383,55 @@ describe('POST /api/sessions/upload', () => {
     expect(processingQueue.enqueue).toHaveBeenCalledTimes(1);
     expect(processingQueue.enqueue).toHaveBeenCalledWith(expect.any(Function));
   });
+  it('14. returns 422 if uploadService throws 422 (e.g. empty file)', async () => {
+    jwtUtil.verifyUserToken.mockImplementation(() => {
+      const err = new Error('Invalid token type');
+      err.name = 'JsonWebTokenError';
+      throw err;
+    });
+    jwtUtil.verifyDeviceToken.mockReturnValue({ sub: 'device-123' });
+
+    mockUploadMiddleware.mockImplementation((req, res, next) => {
+      req.file = { path: '/tmp/uploads/empty.ndjson', originalname: 'empty.ndjson' };
+      req.body = { athlete_id: '123e4567-e89b-12d3-a456-426614174000' };
+      next();
+    });
+
+    const AppError = (await import('../../src/middleware/errorHandler.js')).AppError;
+    uploadService.processUpload.mockRejectedValue(new AppError(422, 'validation_error', 'Uploaded file is empty'));
+
+    const res = await request(app)
+      .post('/api/sessions/upload')
+      .set('Authorization', 'Bearer device-token');
+
+    expect(res.status).toBe(422);
+    expect(res.body.error).toBe('validation_error');
+    expect(res.body.message).toBe('Uploaded file is empty');
+  });
+
+  it('15. returns 415 if uploadService throws 415 (e.g. non-NDJSON content)', async () => {
+    jwtUtil.verifyUserToken.mockImplementation(() => {
+      const err = new Error('Invalid token type');
+      err.name = 'JsonWebTokenError';
+      throw err;
+    });
+    jwtUtil.verifyDeviceToken.mockReturnValue({ sub: 'device-123' });
+
+    mockUploadMiddleware.mockImplementation((req, res, next) => {
+      req.file = { path: '/tmp/uploads/bad.ndjson', originalname: 'bad.ndjson' };
+      req.body = { athlete_id: '123e4567-e89b-12d3-a456-426614174000' };
+      next();
+    });
+
+    const AppError = (await import('../../src/middleware/errorHandler.js')).AppError;
+    uploadService.processUpload.mockRejectedValue(new AppError(415, 'unsupported_media_type', 'File contains no valid NDJSON records'));
+
+    const res = await request(app)
+      .post('/api/sessions/upload')
+      .set('Authorization', 'Bearer device-token');
+
+    expect(res.status).toBe(415);
+    expect(res.body.error).toBe('unsupported_media_type');
+    expect(res.body.message).toBe('File contains no valid NDJSON records');
+  });
 });
