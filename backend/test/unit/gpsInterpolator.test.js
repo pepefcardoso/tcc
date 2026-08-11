@@ -121,6 +121,22 @@ describe('estimateDeadReckoning', () => {
     expect(res[1].longitude).toBe(20);
     expect(res[0].gapSegment).toBe(true);
   });
+
+  it('returns empty array if lastFix has invalid time', () => {
+    const result = estimateDeadReckoning(
+      { latitude: 0, longitude: 0, speed_ms: 5, time: null },
+      null, 2, 100
+    );
+    expect(result).toEqual([]);
+  });
+
+  it('avoids division by zero at geographic poles', () => {
+    const last = { latitude: 90, longitude: 0, speed_ms: 5, time: 0 };
+    const penult = { latitude: 89.9, longitude: 0 };
+    const res = estimateDeadReckoning(last, penult, 1, 100);
+    expect(res).toHaveLength(1);
+    expect(res[0].longitude).toBe(0);
+  });
 });
 
 describe('createGpsInterpolator', () => {
@@ -129,6 +145,13 @@ describe('createGpsInterpolator', () => {
     const r = { time: 0, latitude: 1, longitude: 1, speed_ms: 1 };
     const res = interpolator.push(r);
     expect(res).toEqual([r]);
+  });
+
+  it('accepts numeric epoch timestamps', () => {
+    const interpolator = createGpsInterpolator({ expectedIntervalMs: 100 });
+    interpolator.push({ time: 0, latitude: 1, longitude: 1, speed_ms: 1 });
+    const res = interpolator.push({ time: 100, latitude: 2, longitude: 2, speed_ms: 2 });
+    expect(res).toHaveLength(1);
   });
 
   it('returns both if dt matches expected interval (no gap)', () => {
@@ -199,6 +222,14 @@ describe('createGpsInterpolator', () => {
     expect(consoleWarnSpy).toHaveBeenCalledWith(
       expect.stringContaining('Invalid or out-of-order timestamp')
     );
+  });
+
+  it('handles out-of-order timestamps by treating as no-gap', () => {
+    const interpolator = createGpsInterpolator({ expectedIntervalMs: 100 });
+    interpolator.push({ time: 500, latitude: 1, longitude: 1, speed_ms: 1 });
+    const res = interpolator.push({ time: 200, latitude: 2, longitude: 2, speed_ms: 2 });
+    expect(res).toHaveLength(1);
+    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('out-of-order'));
   });
 
   it('flush returns empty array', () => {

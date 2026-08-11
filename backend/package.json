@@ -11,6 +11,7 @@
     "dev": "nodemon src/server.js",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "test:integration": "node --experimental-vm-modules node_modules/.bin/jest --config jest.integration.config.js",
+    "test:coverage:metrics": "node --experimental-vm-modules node_modules/.bin/jest --coverage --collectCoverageFrom=\"src/services/metrics/**/*.js\" --testPathPatterns=\"test/unit/(butterworthFilter|haversineCalculator|sprintDetector|playerLoadCalculator|maxSpeedTracker|gpsFilter|gpsInterpolator|processingService.e2e)\"",
     "lint": "eslint src/",
     "format": "prettier --write src/",
     "migrate": "node scripts/migrate.js",

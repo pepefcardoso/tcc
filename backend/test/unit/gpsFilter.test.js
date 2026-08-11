@@ -47,6 +47,12 @@ describe('passesHdopFilter', () => {
     expect(passesHdopFilter(r2)).toBe(true);
     expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
   });
+
+  it('passes record with hdop === null and logs warning', () => {
+    const r = { type: 'gps', speed_ms: 3.0, hdop: null };
+    expect(passesHdopFilter(r)).toBe(true);
+    expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('createMedianSpeedFilter', () => {

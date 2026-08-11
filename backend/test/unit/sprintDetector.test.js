@@ -149,4 +149,18 @@ describe('createSprintDetector - Edge cases', () => {
     detector.push(rec(7.5, 2500));
     expect(detector.flush()).toBe(1);
   });
+
+  it('accepts numeric epoch millisecond timestamps', () => {
+    detector.push({ speed_ms: 7.5, time: 1000 });
+    detector.push({ speed_ms: 7.5, time: 2500 });
+    expect(detector.flush()).toBe(1);
+  });
+
+  it('successive below-threshold records while not in sprint do not affect count', () => {
+    detector.push({ speed_ms: 5.0, time: new Date(1000).toISOString() });
+    detector.push({ speed_ms: 4.0, time: new Date(2000).toISOString() });
+    detector.push({ speed_ms: 3.0, time: new Date(3000).toISOString() });
+    expect(detector.getCount()).toBe(0);
+    expect(detector.flush()).toBe(0);
+  });
 });
