@@ -1,11 +1,13 @@
+import fs from 'fs';
 import path from 'path';
 import { Router } from 'express';
 import multer from 'multer';
-import { authMiddleware, requireDevice } from '../middleware/auth.js';
+import { authMiddleware, requireDeviceOrOperator } from '../middleware/auth.js';
 import { upload } from '../middleware/multerUpload.js';
 import { validate } from '../middleware/validate.js';
 import { uploadBodySchema } from '../schemas/upload.schema.js';
 import { AppError } from '../middleware/errorHandler.js';
+import * as athleteRepository from '../repositories/athleteRepository.js';
 import * as sessionRepository from '../repositories/sessionRepository.js';
 import { enqueue } from '../services/processingQueue.js';
 import * as uploadService from '../services/uploadService.js';
@@ -31,7 +33,7 @@ function handleMulterError(err, req, res, next) {
 router.post(
   '/upload',
   authMiddleware,
-  requireDevice,
+  requireDeviceOrOperator,
   (req, res, next) =>
     upload.single('file')(req, res, (err) => {
       if (err) return handleMulterError(err, req, res, next);
@@ -42,6 +44,12 @@ router.post(
     try {
       if (!req.file) {
         return next(new AppError(422, 'validation_error', 'File field "file" is required'));
+      }
+
+      const athlete = await athleteRepository.findById(req.body.athlete_id);
+      if (!athlete) {
+        fs.unlink(req.file.path, () => {});
+        return next(new AppError(404, 'athlete_not_found', 'Athlete not found'));
       }
 
       const originalname = path.basename(req.file.originalname);

@@ -68,3 +68,23 @@ export function requireDevice(req, res, next) {
   }
   return next();
 }
+
+/**
+ * Express middleware that allows either a device token OR a user token 
+ * with the role of 'tecnico' or 'preparador'.
+ * Must be used AFTER authMiddleware.
+ */
+export function requireDeviceOrOperator(req, res, next) {
+  if (req.device) {
+    return next();
+  }
+  
+  if (req.user && ['tecnico', 'preparador'].includes(req.user.role)) {
+    return next();
+  }
+
+  return res.status(403).json({
+    error: 'forbidden',
+    message: 'Insufficient role or invalid token type for this operation',
+  });
+}
