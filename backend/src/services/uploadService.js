@@ -17,14 +17,14 @@ export async function processUpload({ filePath, athleteId, sourceFilename }) {
       await processor.onRecord(record);
     }
 
-    await processor.drain();
+    const { metrics } = await processor.drain();
 
     await sessionRepository.markProcessed(session.id);
 
     return {
       session_id: session.id,
       status: 'processed',
-      metrics: null,
+      metrics,
     };
   } catch (error) {
     throw error;

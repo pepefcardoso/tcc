@@ -10,7 +10,11 @@ jest.unstable_mockModule('../../src/services/processingService.js', () => {
     ProcessingService: jest.fn().mockImplementation(() => {
       return {
         onRecord: jest.fn(),
-        drain: jest.fn().mockResolvedValue({ totalGps: 10, totalImu: 20 }),
+        drain: jest.fn().mockResolvedValue({ 
+          totalGps: 10, 
+          totalImu: 20, 
+          metrics: { total_distance_m: 100, max_speed_kmh: 25, sprint_count: 2, player_load: 50 } 
+        }),
       };
     }),
   };
@@ -72,7 +76,7 @@ describe('UploadService', () => {
     expect(result).toEqual({
       session_id: 'session-123',
       status: 'processed',
-      metrics: null,
+      metrics: { total_distance_m: 100, max_speed_kmh: 25, sprint_count: 2, player_load: 50 },
     });
 
     expect(fs.unlink).toHaveBeenCalledWith('/tmp/test.ndjson', expect.any(Function));
