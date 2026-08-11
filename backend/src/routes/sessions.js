@@ -11,6 +11,8 @@ import * as athleteRepository from '../repositories/athleteRepository.js';
 import * as sessionRepository from '../repositories/sessionRepository.js';
 import { enqueue } from '../services/processingQueue.js';
 import * as uploadService from '../services/uploadService.js';
+import { requireRole } from '../middleware/role.js';
+import { pseSchema } from '../schemas/pse.schema.js';
 
 const router = Router();
 
@@ -72,6 +74,48 @@ router.post(
       );
 
       return res.status(200).json(taskResult);
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
+
+router.patch(
+  '/:id/pse',
+  authMiddleware,
+  requireRole('atleta', 'tecnico', 'preparador'),
+  validate(pseSchema),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { pse } = req.body;
+
+      if (pse < 1 || pse > 10) {
+        return next(
+          new AppError(
+            422,
+            'invalid_pse_range',
+            'PSE must be an integer between 1 and 10 inclusive'
+          )
+        );
+      }
+
+      const session = await sessionRepository.findById(id);
+      if (!session) {
+        return next(new AppError(404, 'session_not_found', 'Session not found'));
+      }
+
+      const durationMinutes = session.duration_minutes ?? 0;
+      const sessionLoad = pse * durationMinutes;
+
+      const updated = await sessionRepository.updatePse(id, pse, sessionLoad);
+
+      return res.status(200).json({
+        session_id: updated.id,
+        pse: updated.pse,
+        session_load: parseFloat(updated.session_load),
+        acwr: { value: null, zone: null },
+      });
     } catch (error) {
       return next(error);
     }

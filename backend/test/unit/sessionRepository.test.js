@@ -203,4 +203,52 @@ describe('SessionRepository', () => {
       expect(queryValues[15]).toBe(0.0);
     });
   });
+
+  describe('findById', () => {
+    it('returns session with mapped metrics when found', async () => {
+      mockPool.query.mockResolvedValue({
+        rows: [
+          {
+            id: '123',
+            source_filename: 'test.ndjson',
+            total_distance_m: '1500.5',
+            max_speed_kmh: '25.2',
+            sprint_count: '3',
+            player_load: '120.4',
+            session_load: '80.0',
+          },
+        ],
+      });
+
+      const result = await sessionRepository.findById('123', mockPool);
+
+      expect(mockPool.query).toHaveBeenCalledWith(expect.stringContaining('SELECT'), ['123']);
+      expect(result.id).toBe('123');
+      expect(result.total_distance_m).toBe('1500.5');
+    });
+
+    it('returns null if not found', async () => {
+      mockPool.query.mockResolvedValue({ rows: [] });
+      const result = await sessionRepository.findById('999', mockPool);
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('updatePse', () => {
+    it('updates pse and session_load and returns the updated row', async () => {
+      const updatedRow = { id: '123', pse: 7, session_load: 630.00, duration_minutes: 90, athlete_id: 'a1' };
+      mockPool.query.mockResolvedValue({ rows: [updatedRow] });
+
+      const result = await sessionRepository.updatePse('123', 7, 630.00, mockPool);
+
+      expect(mockPool.query).toHaveBeenCalledWith(expect.stringContaining('UPDATE sessions'), ['123', 7, 630.00]);
+      expect(result).toEqual(updatedRow);
+    });
+
+    it('returns null if session not found (no rows updated)', async () => {
+      mockPool.query.mockResolvedValue({ rows: [] });
+      const result = await sessionRepository.updatePse('999', 7, 630.00, mockPool);
+      expect(result).toBeNull();
+    });
+  });
 });

@@ -214,3 +214,46 @@ export async function rollbackAndRelease(client) {
     }
   }
 }
+
+/**
+ * Find a session by its ID, including joined metrics if available.
+ *
+ * @param {string} id - The UUID of the session
+ * @param {import('pg').Pool} pool - Database pool
+ * @returns {Promise<Object|null>} The session row or null
+ */
+export async function findById(id, pool = defaultPool) {
+  const { rows } = await pool.query(
+    `SELECT 
+       s.*, 
+       sm.total_distance_m, 
+       sm.max_speed_kmh, 
+       sm.sprint_count, 
+       sm.player_load
+     FROM sessions s
+     LEFT JOIN session_metrics sm ON sm.session_id = s.id
+     WHERE s.id = $1`,
+    [id]
+  );
+  return rows[0] ?? null;
+}
+
+/**
+ * Update the PSE and computed session_load for a session.
+ *
+ * @param {string} id - The UUID of the session
+ * @param {number} pse - The Perceived Exertion (1-10)
+ * @param {number} sessionLoad - The computed session load (PSE * duration_minutes)
+ * @param {import('pg').Pool} pool - Database pool
+ * @returns {Promise<Object|null>} The updated session row or null
+ */
+export async function updatePse(id, pse, sessionLoad, pool = defaultPool) {
+  const { rows } = await pool.query(
+    `UPDATE sessions
+     SET pse = $2, session_load = $3
+     WHERE id = $1
+     RETURNING id, pse, session_load, duration_minutes, athlete_id`,
+    [id, pse, sessionLoad]
+  );
+  return rows[0] ?? null;
+}
