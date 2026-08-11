@@ -19,6 +19,7 @@ export async function processUpload({ filePath, athleteId, sourceFilename }) {
 
     const { metrics } = await processor.drain();
 
+    await sessionRepository.insertMetrics(session.id, metrics);
     await sessionRepository.markProcessed(session.id);
 
     return {

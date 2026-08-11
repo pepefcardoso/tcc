@@ -161,3 +161,28 @@ export async function markProcessed(sessionId, pool = defaultPool) {
   );
   return rows[0] ?? null;
 }
+
+/**
+ * Inserts processed session metrics into session_metrics table.
+ *
+ * @param {string} sessionId - The UUID of the session
+ * @param {Object} metrics - Computed session metrics
+ * @param {import('pg').Pool} pool - Database pool
+ * @returns {Promise<Object>} The inserted metrics row
+ */
+export async function insertMetrics(sessionId, metrics, pool = defaultPool) {
+  const { rows } = await pool.query(
+    `INSERT INTO session_metrics
+       (session_id, total_distance_m, max_speed_kmh, sprint_count, player_load)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING *`,
+    [
+      sessionId,
+      metrics.total_distance_m,
+      metrics.max_speed_kmh,
+      metrics.sprint_count,
+      metrics.player_load,
+    ]
+  );
+  return rows[0];
+}

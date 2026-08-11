@@ -62,6 +62,16 @@ describe('UploadService Integration', () => {
     );
     expect(parseInt(imuRows[0].count, 10)).toBe(10);
 
+    const { rows: metricsRows } = await pool.query(
+      'SELECT * FROM session_metrics WHERE session_id = $1',
+      [result.session_id]
+    );
+    expect(metricsRows).toHaveLength(1);
+    expect(parseFloat(metricsRows[0].total_distance_m)).toBeCloseTo(result.metrics.total_distance_m, 1);
+    expect(parseFloat(metricsRows[0].max_speed_kmh)).toBeCloseTo(result.metrics.max_speed_kmh, 1);
+    expect(parseInt(metricsRows[0].sprint_count, 10)).toBe(result.metrics.sprint_count);
+    expect(parseFloat(metricsRows[0].player_load)).toBeCloseTo(result.metrics.player_load, 4);
+
     expect(fs.existsSync(tempPath)).toBe(false);
   });
 });
