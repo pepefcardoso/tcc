@@ -189,5 +189,20 @@ describe('Athlete Sessions Integration', () => {
       expect(res.body[0].metrics).not.toBeNull();
       expect(res.body[1].metrics).toBeNull();
     });
+
+    it('H11: Session list objects include all required fields', async () => {
+      const res = await request(app)
+        .get(`/api/athletes/${athleteId}/sessions`)
+        .set('Authorization', `Bearer ${atletaToken}`)
+        .expect(200);
+
+      const session = res.body[0];
+      expect(session).toHaveProperty('id');
+      expect(session).toHaveProperty('athlete_id');
+      expect(session).toHaveProperty('started_at');
+      expect(session).toHaveProperty('duration_minutes');
+      expect(session).toHaveProperty('source_filename');
+      expect(session).toHaveProperty('sync_status');
+    });
   });
 });

@@ -182,4 +182,26 @@ describe('GET /api/sessions/:id/samples Integration', () => {
     expect(typeof first.speed_ms).toBe('number');
     expect(first.speed_ms).toBe(3.1);
   });
+
+  it('S14: ?downsample=100 on 7 samples (larger than total) returns 1 sample', async () => {
+    const res = await request(app)
+      .get(`/api/sessions/${sessionIdWithGps}/samples?downsample=100`)
+      .set('Authorization', `Bearer ${atletaToken}`)
+      .expect(200);
+
+    expect(res.body.gps).toHaveLength(1);
+    expect(res.body.gps[0].speed_ms).toBe(3.1);
+  });
+
+  it('S15: ?downsample=3 on 7 samples returns 3 samples', async () => {
+    const res = await request(app)
+      .get(`/api/sessions/${sessionIdWithGps}/samples?downsample=3`)
+      .set('Authorization', `Bearer ${atletaToken}`)
+      .expect(200);
+
+    expect(res.body.gps).toHaveLength(3);
+    expect(res.body.gps[0].speed_ms).toBe(3.1);
+    expect(res.body.gps[1].speed_ms).toBe(3.4);
+    expect(res.body.gps[2].speed_ms).toBe(3.7);
+  });
 });

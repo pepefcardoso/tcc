@@ -95,4 +95,29 @@ describe('GET /api/sessions/:id Integration', () => {
     expect(res.body.metrics.sprint_count).toBe(5);
     expect(res.body.metrics.player_load).toBe(150.75);
   });
+
+  it('5. returns 500 for malformed (non-UUID) session ID (known unguarded behavior)', async () => {
+    const res = await request(app)
+      .get(`/api/sessions/not-a-uuid`)
+      .set('Authorization', `Bearer ${atletaToken}`);
+
+    expect(res.status).toBe(500);
+  });
+
+  it('6. response shape includes all required top-level fields', async () => {
+    const res = await request(app)
+      .get(`/api/sessions/${sessionIdWithMetrics}`)
+      .set('Authorization', `Bearer ${atletaToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('id');
+    expect(res.body).toHaveProperty('athlete_id');
+    expect(res.body).toHaveProperty('started_at');
+    expect(res.body).toHaveProperty('source_filename');
+    expect(res.body).toHaveProperty('sync_status');
+    expect(res.body).toHaveProperty('created_at');
+    expect(res.body).toHaveProperty('duration_minutes');
+    expect(res.body).toHaveProperty('pse');
+    expect(res.body).toHaveProperty('session_load');
+  });
 });

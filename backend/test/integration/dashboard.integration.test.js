@@ -163,4 +163,39 @@ describe('Dashboard Integration (T-058)', () => {
     expect(res.body.athletes[1].name).toBe('Charlie');
     expect(res.body.athletes[2].name).toBe('Zebra');
   });
+
+  it('11. pse_pending is false when PSE is already set', async () => {
+    const { rows: athleteRows } = await pool.query(
+      `INSERT INTO athletes (name) VALUES ('PSE Athlete') RETURNING id`
+    );
+    const athleteId = athleteRows[0].id;
+
+    await pool.query(
+      `INSERT INTO sessions (athlete_id, source_filename, sync_status, started_at, pse, session_load)
+       VALUES ($1, 'pse_session.ndjson', 'processed', now(), 8, 480)`,
+      [athleteId]
+    );
+
+    const res = await request(app)
+      .get('/api/dashboard')
+      .set('Authorization', `Bearer ${userToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.athletes).toHaveLength(1);
+    expect(res.body.athletes[0].latest_session.pse_pending).toBe(false);
+  });
+
+  it('12. acwr.value is null when athlete has no sessions', async () => {
+    await pool.query(
+      `INSERT INTO athletes (name) VALUES ('No Session Athlete 2')`
+    );
+
+    const res = await request(app)
+      .get('/api/dashboard')
+      .set('Authorization', `Bearer ${userToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.athletes).toHaveLength(1);
+    expect(res.body.athletes[0].acwr.value).toBeNull();
+  });
 });
