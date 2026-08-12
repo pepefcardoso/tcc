@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth.js';
 import { requireRole } from '../middleware/role.js';
@@ -5,6 +6,7 @@ import { validate } from '../middleware/validate.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { createAthleteSchema, patchAthleteSchema } from '../schemas/athlete.schema.js';
 import * as athleteRepository from '../repositories/athleteRepository.js';
+import * as sessionRepository from '../repositories/sessionRepository.js';
 import { calculateAcwr, classifyAcwrZone } from '../services/acwrService.js';
 
 const router = Router();
@@ -41,6 +43,33 @@ router.get('/', authMiddleware, async (req, res, next) => {
     return next(error);
   }
 });
+
+const sessionQuerySchema = z.object({
+  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Must be YYYY-MM-DD' }).optional(),
+  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Must be YYYY-MM-DD' }).optional(),
+});
+
+router.get(
+  '/:id/sessions',
+  authMiddleware,
+  validate(sessionQuerySchema, 'query'),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { from, to } = req.query;
+
+      const athlete = await athleteRepository.findById(id);
+      if (!athlete) {
+        return next(new AppError(404, 'athlete_not_found', 'Athlete not found'));
+      }
+
+      const sessions = await sessionRepository.findByAthleteId(id, { from, to });
+      return res.status(200).json(sessions);
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
 
 router.get(
   '/:id/acwr',

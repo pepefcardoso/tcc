@@ -25,7 +25,12 @@ export function validate(schema, target = 'body') {
       return next(err);
     }
 
-    req[target] = result.data;
+    Object.defineProperty(req, target, {
+      value: result.data,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
     return next();
   };
 }

@@ -316,3 +316,71 @@ export async function getSessionLoadHistory(athleteId, days, referenceDate = new
     session_load: parseFloat(row.session_load)
   }));
 }
+
+/**
+ * Find all sessions for a given athlete, optionally filtered by date range.
+ *
+ * @param {string} athleteId - Athlete UUID
+ * @param {Object} [options]
+ * @param {string} [options.from] - YYYY-MM-DD
+ * @param {string} [options.to] - YYYY-MM-DD
+ * @param {import('pg').Pool} pool - Database pool
+ * @returns {Promise<Object[]>}
+ */
+export async function findByAthleteId(athleteId, { from, to } = {}, pool = defaultPool) {
+  let queryText = `
+    SELECT 
+      s.*, 
+      sm.total_distance_m, 
+      sm.max_speed_kmh, 
+      sm.sprint_count, 
+      sm.player_load
+    FROM sessions s
+    LEFT JOIN session_metrics sm ON sm.session_id = s.id
+    WHERE s.athlete_id = $1
+  `;
+  
+  const queryParams = [athleteId];
+  let paramIndex = 2;
+
+  if (from) {
+    queryText += ` AND s.started_at >= $${paramIndex}::date`;
+    queryParams.push(from);
+    paramIndex++;
+  }
+
+  if (to) {
+    queryText += ` AND s.started_at < ($${paramIndex}::date + interval '1 day')`;
+    queryParams.push(to);
+  }
+
+  queryText += ` ORDER BY s.started_at DESC`;
+
+  const { rows } = await pool.query(queryText, queryParams);
+
+  return rows.map((row) => {
+    let metrics = null;
+    if (row.total_distance_m !== null && row.total_distance_m !== undefined) {
+      metrics = {
+        total_distance_m: parseFloat(row.total_distance_m),
+        max_speed_kmh: parseFloat(row.max_speed_kmh),
+        sprint_count: parseInt(row.sprint_count, 10),
+        player_load: parseFloat(row.player_load),
+      };
+    }
+
+    return {
+      id: row.id,
+      athlete_id: row.athlete_id,
+      started_at: row.started_at,
+      duration_minutes: row.duration_minutes,
+      pse: row.pse,
+      session_load: row.session_load ? parseFloat(row.session_load) : null,
+      device_id: row.device_id,
+      source_filename: row.source_filename,
+      sync_status: row.sync_status,
+      created_at: row.created_at,
+      metrics,
+    };
+  });
+}
