@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { clearAuth, handleUnauthorized } from '../api/client.js';
 import './AppLayout.css';
 
 export default function AppLayout() {
@@ -9,6 +10,11 @@ export default function AppLayout() {
   useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
+
+  const handleLogout = () => {
+    clearAuth();
+    handleUnauthorized();
+  };
 
   return (
     <div className="app-shell">
@@ -33,7 +39,7 @@ export default function AppLayout() {
           <NavLink to="/dashboard">Dashboard</NavLink>
           <NavLink to="/athletes">Athletes</NavLink>
           <NavLink to="/sessions">Sessions</NavLink>
-          <button className="app-nav__logout">Logout</button>
+          <button className="app-nav__logout" onClick={handleLogout}>Logout</button>
         </nav>
       </header>
 
