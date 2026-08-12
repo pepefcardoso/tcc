@@ -11,6 +11,7 @@ import * as athleteRepository from '../repositories/athleteRepository.js';
 import * as sessionRepository from '../repositories/sessionRepository.js';
 import { enqueue } from '../services/processingQueue.js';
 import * as uploadService from '../services/uploadService.js';
+import { calculateAcwr, classifyAcwrZone } from '../services/acwrService.js';
 import { requireRole } from '../middleware/role.js';
 import { pseSchema } from '../schemas/pse.schema.js';
 
@@ -110,11 +111,14 @@ router.patch(
 
       const updated = await sessionRepository.updatePse(id, pse, sessionLoad);
 
+      const acwrResult = await calculateAcwr(updated.athlete_id);
+      const acwrZone = classifyAcwrZone(acwrResult.acwr);
+
       return res.status(200).json({
         session_id: updated.id,
         pse: updated.pse,
         session_load: parseFloat(updated.session_load),
-        acwr: { value: null, zone: null },
+        acwr: { value: acwrResult.acwr, zone: acwrZone },
       });
     } catch (error) {
       return next(error);

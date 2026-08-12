@@ -91,4 +91,29 @@ describe('PSE Integration (T-050)', () => {
     expect(res.status).toBe(403);
     expect(res.body.error).toBe('forbidden');
   });
+
+  it('returns real ACWR zone when athlete has prior session loads', async () => {
+    await pool.query(
+      `INSERT INTO sessions (athlete_id, source_filename, sync_status, duration_minutes, pse, session_load, started_at, created_at)
+       VALUES 
+       ($1, 'past1.ndjson', 'processed', 90, 10, 900, now() - interval '25 days', now()),
+       ($1, 'past2.ndjson', 'processed', 90, 8, 720, now() - interval '14 days', now()),
+       ($1, 'past3.ndjson', 'processed', 90, 8, 720, now() - interval '5 days', now())`,
+      [athleteId]
+    );
+
+    const res = await request(app)
+      .patch(`/api/sessions/${sessionId}/pse`)
+      .set('Authorization', `Bearer ${atletaToken}`)
+      .send({ pse: 8 });
+
+    expect(res.status).toBe(200);
+
+    expect(res.body.session_load).toBe(720);
+
+    expect(res.body.acwr).toBeDefined();
+    expect(typeof res.body.acwr.value).toBe('number');
+    expect(res.body.acwr.value).toBeGreaterThan(0);
+    expect(['blue', 'green', 'yellow', 'red']).toContain(res.body.acwr.zone);
+  });
 });
