@@ -257,3 +257,36 @@ export async function updatePse(id, pse, sessionLoad, pool = defaultPool) {
   );
   return rows[0] ?? null;
 }
+
+/**
+ * Returns all session_load values for an athlete within the last N days,
+ * ordered by started_at ASC, anchored to a reference timestamp.
+ *
+ * @param {string} athleteId
+ * @param {number} days        - Window size in calendar days
+ * @param {Date}   [referenceDate=new Date()] - Anchor for the rolling window
+ * @param {import('pg').Pool} pool - Database pool
+ * @returns {Promise<Array<{started_at: Date, session_load: number}>>}
+ */
+export async function getSessionLoadHistory(athleteId, days, referenceDate = new Date(), pool = defaultPool) {
+  const queryText = `
+    SELECT started_at, session_load
+    FROM sessions
+    WHERE athlete_id = $1
+      AND session_load IS NOT NULL
+      AND started_at >= $2::timestamptz - ($3 || ' days')::interval
+      AND started_at <= $2::timestamptz
+    ORDER BY started_at ASC
+  `;
+  
+  const { rows } = await pool.query(queryText, [
+    athleteId,
+    referenceDate.toISOString(),
+    days
+  ]);
+  
+  return rows.map(row => ({
+    started_at: row.started_at,
+    session_load: parseFloat(row.session_load)
+  }));
+}
