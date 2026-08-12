@@ -1,4 +1,4 @@
-import { calculateAcwr } from '../../src/services/acwrService.js';
+import { calculateAcwr, classifyAcwrZone } from '../../src/services/acwrService.js';
 import { jest } from '@jest/globals';
 
 describe('acwrService', () => {
@@ -101,5 +101,46 @@ describe('acwrService', () => {
 
     const result = await calculateAcwr('a1', new Date(), mockPool);
     expect(result.sufficient_history).toBe(true);
+  });
+});
+
+describe('classifyAcwrZone', () => {
+  it('AC-07: null input returns null (insufficient history)', () => {
+    expect(classifyAcwrZone(null)).toBeNull();
+    expect(classifyAcwrZone(undefined)).toBeNull();
+  });
+
+  it('AC-08: < 0.80 returns blue', () => {
+    expect(classifyAcwrZone(0.79)).toBe('blue');
+  });
+
+  it('AC-09: 0.80 returns green (exact lower boundary)', () => {
+    expect(classifyAcwrZone(0.80)).toBe('green');
+  });
+
+  it('AC-10: 1.30 returns green (exact upper boundary)', () => {
+    expect(classifyAcwrZone(1.30)).toBe('green');
+  });
+
+  it('AC-11: 1.31 returns yellow (exact lower boundary)', () => {
+    expect(classifyAcwrZone(1.31)).toBe('yellow');
+  });
+
+  it('AC-12: 1.50 returns yellow (exact upper boundary)', () => {
+    expect(classifyAcwrZone(1.50)).toBe('yellow');
+  });
+
+  it('AC-13: > 1.50 returns red', () => {
+    expect(classifyAcwrZone(1.51)).toBe('red');
+    expect(classifyAcwrZone(2.50)).toBe('red');
+  });
+
+  it('AC-14: 0.00 returns blue', () => {
+    expect(classifyAcwrZone(0.00)).toBe('blue');
+  });
+
+  it('AC-15: non-numeric inputs return null', () => {
+    expect(classifyAcwrZone('1.20')).toBeNull();
+    expect(classifyAcwrZone(NaN)).toBeNull();
   });
 });

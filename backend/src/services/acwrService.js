@@ -39,3 +39,27 @@ export async function calculateAcwr(athleteId, referenceDate = new Date(), pool)
     sufficient_history: true
   };
 }
+
+/**
+ * Maps an ACWR numeric value to a risk zone label per RF16.
+ *
+ * Zone thresholds:
+ *   blue   -> acwr < 0.80         (under-training risk)
+ *   green  -> 0.80 <= acwr <= 1.30  (optimal training load)
+ *   yellow -> 1.31 <= acwr <= 1.50  (slightly elevated risk)
+ *   red    -> acwr > 1.50          (high injury risk)
+ *
+ * Returns null when acwr is null (insufficient chronic load history).
+ *
+ * @param {number|null} acwr - The computed ACWR value
+ * @returns {'blue'|'green'|'yellow'|'red'|null}
+ */
+export function classifyAcwrZone(acwr) {
+  if (acwr === null || acwr === undefined || typeof acwr !== 'number' || isNaN(acwr)) {
+    return null;
+  }
+  if (acwr < 0.80) return 'blue';
+  if (acwr <= 1.30) return 'green';
+  if (acwr <= 1.50) return 'yellow';
+  return 'red';
+}
