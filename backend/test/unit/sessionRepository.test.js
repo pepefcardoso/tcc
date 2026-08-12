@@ -224,7 +224,36 @@ describe('SessionRepository', () => {
 
       expect(mockPool.query).toHaveBeenCalledWith(expect.stringContaining('SELECT'), ['123']);
       expect(result.id).toBe('123');
-      expect(result.total_distance_m).toBe('1500.5');
+      expect(result.metrics).toEqual({
+        total_distance_m: 1500.5,
+        max_speed_kmh: 25.2,
+        sprint_count: 3,
+        player_load: 120.4,
+      });
+      expect(result.session_load).toBe(80.0);
+    });
+
+    it('returns session with metrics = null when total_distance_m is null', async () => {
+      mockPool.query.mockResolvedValue({
+        rows: [
+          {
+            id: '123',
+            source_filename: 'test.ndjson',
+            total_distance_m: null,
+            max_speed_kmh: null,
+            sprint_count: null,
+            player_load: null,
+            session_load: null,
+          },
+        ],
+      });
+
+      const result = await sessionRepository.findById('123', mockPool);
+
+      expect(mockPool.query).toHaveBeenCalledWith(expect.stringContaining('SELECT'), ['123']);
+      expect(result.id).toBe('123');
+      expect(result.metrics).toBeNull();
+      expect(result.session_load).toBeNull();
     });
 
     it('returns null if not found', async () => {

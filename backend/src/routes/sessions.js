@@ -81,6 +81,23 @@ router.post(
   }
 );
 
+router.get(
+  '/:id',
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const session = await sessionRepository.findById(id);
+      if (!session) {
+        return next(new AppError(404, 'session_not_found', 'Session not found'));
+      }
+      return res.status(200).json(session);
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
+
 router.patch(
   '/:id/pse',
   authMiddleware,
