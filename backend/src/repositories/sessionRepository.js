@@ -384,3 +384,50 @@ export async function findByAthleteId(athleteId, { from, to } = {}, pool = defau
     };
   });
 }
+
+/**
+ * Returns GPS samples for a session, ordered by time ASC.
+ * Supports optional row-number-based downsampling (every Nth row).
+ *
+ * @param {string} sessionId - Session UUID
+ * @param {number|null} downsample - If provided, returns every Nth sample (>= 1)
+ * @param {import('pg').Pool} pool - Database pool
+ * @returns {Promise<Array<{time: string, latitude: number, longitude: number, speed_ms: number}>>}
+ */
+export async function getGpsSamples(sessionId, downsample = null, pool = defaultPool) {
+  let queryText;
+  let params;
+
+  if (downsample && downsample > 1) {
+    queryText = `
+      WITH numbered AS (
+        SELECT time, latitude, longitude, speed_ms,
+               ROW_NUMBER() OVER (ORDER BY time ASC) AS rn
+        FROM gps_samples
+        WHERE session_id = $1
+      )
+      SELECT time, latitude, longitude, speed_ms
+      FROM numbered
+      WHERE rn % $2 = 1
+      ORDER BY time ASC
+    `;
+    params = [sessionId, downsample];
+  } else {
+    queryText = `
+      SELECT time, latitude, longitude, speed_ms
+      FROM gps_samples
+      WHERE session_id = $1
+      ORDER BY time ASC
+    `;
+    params = [sessionId];
+  }
+
+  const { rows } = await pool.query(queryText, params);
+
+  return rows.map((row) => ({
+    time: row.time.toISOString(),
+    latitude: parseFloat(row.latitude),
+    longitude: parseFloat(row.longitude),
+    speed_ms: parseFloat(row.speed_ms),
+  }));
+}

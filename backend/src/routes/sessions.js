@@ -82,6 +82,37 @@ router.post(
 );
 
 router.get(
+  '/:id/samples',
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+
+      let downsample = null;
+      if (req.query.downsample !== undefined) {
+        const parsed = parseInt(req.query.downsample, 10);
+        if (!Number.isInteger(parsed) || parsed < 1 || String(parsed) !== req.query.downsample) {
+          return next(
+            new AppError(422, 'validation_error', 'downsample must be a positive integer >= 1')
+          );
+        }
+        downsample = parsed;
+      }
+
+      const session = await sessionRepository.findById(id);
+      if (!session) {
+        return next(new AppError(404, 'session_not_found', 'Session not found'));
+      }
+
+      const gpsSamples = await sessionRepository.getGpsSamples(id, downsample);
+      return res.status(200).json({ gps: gpsSamples });
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
+
+router.get(
   '/:id',
   authMiddleware,
   async (req, res, next) => {
