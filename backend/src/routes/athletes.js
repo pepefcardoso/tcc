@@ -5,6 +5,7 @@ import { validate } from '../middleware/validate.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { createAthleteSchema, patchAthleteSchema } from '../schemas/athlete.schema.js';
 import * as athleteRepository from '../repositories/athleteRepository.js';
+import { calculateAcwr, classifyAcwrZone } from '../services/acwrService.js';
 
 const router = Router();
 
@@ -40,6 +41,35 @@ router.get('/', authMiddleware, async (req, res, next) => {
     return next(error);
   }
 });
+
+router.get(
+  '/:id/acwr',
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+
+      const athlete = await athleteRepository.findById(id);
+      if (!athlete) {
+        return next(new AppError(404, 'athlete_not_found', 'Athlete not found'));
+      }
+
+      const acwrResult = await calculateAcwr(id);
+      const zone = classifyAcwrZone(acwrResult.acwr);
+
+      return res.status(200).json({
+        athlete_id: id,
+        acute_load: acwrResult.acute_load,
+        chronic_load: acwrResult.chronic_load,
+        acwr: acwrResult.acwr,
+        zone,
+        sufficient_history: acwrResult.sufficient_history,
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
 
 router.patch(
   '/:id',
