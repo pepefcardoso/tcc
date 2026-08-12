@@ -1,0 +1,103 @@
+.login-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--color-background);
+  padding: var(--spacing-4);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-8);
+}
+
+.login-logo {
+  text-align: center;
+  margin-bottom: var(--spacing-8);
+}
+
+.login-logo span {
+  font-size: 2rem;
+}
+
+.login-logo h1 {
+  font-size: var(--text-xl);
+  color: var(--color-primary);
+  margin: var(--spacing-2) 0;
+}
+
+.login-logo p {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.login-field label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.login-input {
+  padding: var(--spacing-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: var(--text-base);
+  font-family: inherit;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  transition: outline-color 0.2s ease, border-color 0.2s ease;
+}
+
+.login-input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+
+.login-error {
+  color: #dc2626;
+  font-size: var(--text-sm);
+  margin: 0;
+  font-weight: 500;
+}
+
+.login-btn {
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  padding: var(--spacing-3);
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+  margin-top: var(--spacing-4);
+}
+
+.login-btn:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
