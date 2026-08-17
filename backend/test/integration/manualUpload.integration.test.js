@@ -7,7 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import { env } from '../../src/config/env.js';
 
-describe('Manual Upload Integration (T-048)', () => {
+describe('Manual Upload Integration', () => {
   let athleteId;
   let tecnicoToken;
   let preparadorToken;

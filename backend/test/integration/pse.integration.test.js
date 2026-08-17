@@ -4,7 +4,7 @@ import { pool } from '../../src/db.js';
 import { signUserToken } from '../../src/utils/jwt.js';
 import crypto from 'crypto';
 
-describe('PSE Integration (T-050)', () => {
+describe('PSE Integration', () => {
   let athleteId;
   let sessionId;
   let atletaToken;

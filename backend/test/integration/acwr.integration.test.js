@@ -4,7 +4,7 @@ import { pool } from '../../src/db.js';
 import { signUserToken } from '../../src/utils/jwt.js';
 import crypto from 'crypto';
 
-describe('ACWR Integration (T-054)', () => {
+describe('ACWR Integration', () => {
   let athleteId;
   let userToken;
 

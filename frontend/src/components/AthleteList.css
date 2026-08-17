@@ -1,0 +1,128 @@
+.athlete-list-container {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  background-color: var(--color-surface);
+}
+
+.athlete-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.athlete-table th {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  padding: var(--spacing-3) var(--spacing-4);
+  font-weight: 500;
+  font-size: var(--text-sm);
+}
+
+.athlete-table td {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--text-base);
+  color: var(--color-text);
+  vertical-align: middle;
+}
+
+.athlete-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.athlete-table tbody tr:hover {
+  background-color: var(--color-background);
+}
+
+.athlete-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.status-badge--active {
+  background-color: #dcfce7;
+  color: var(--color-success);
+}
+
+.status-badge--inactive {
+  background-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.athlete-list-empty {
+  padding: var(--spacing-8);
+  text-align: center;
+  color: var(--color-text-muted);
+  background-color: var(--color-surface);
+  border-radius: var(--radius);
+  border: 1px dashed var(--color-border);
+}
+
+.athlete-actions a {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: var(--text-sm);
+  transition: color 0.2s ease;
+}
+
+.athlete-actions a:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+@media (max-width: 767px) {
+  .athlete-table thead {
+    display: none;
+  }
+
+  .athlete-table,
+  .athlete-table tbody,
+  .athlete-table tr,
+  .athlete-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .athlete-table tr {
+    margin-bottom: var(--spacing-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+  }
+
+  .athlete-table tbody tr:hover {
+    background-color: transparent;
+  }
+
+  .athlete-table td {
+    padding: var(--spacing-3);
+    text-align: right;
+    position: relative;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .athlete-table tr td:last-child {
+    border-bottom: none;
+  }
+
+  .athlete-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: var(--spacing-3);
+    top: var(--spacing-3);
+    font-weight: 500;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+  }
+}

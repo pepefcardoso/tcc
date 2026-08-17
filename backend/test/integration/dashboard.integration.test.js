@@ -4,7 +4,7 @@ import { pool } from '../../src/db.js';
 import { signUserToken } from '../../src/utils/jwt.js';
 import crypto from 'crypto';
 
-describe('Dashboard Integration (T-058)', () => {
+describe('Dashboard Integration', () => {
   let userToken;
 
   beforeAll(() => {
