@@ -1,0 +1,42 @@
+.route-map {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-4);
+}
+
+.route-map__map {
+  height: 400px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.route-map__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+  margin-top: var(--spacing-4);
+  justify-content: center;
+}
+
+.route-map__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.route-map__legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.route-map__empty {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: var(--spacing-8);
+}
