@@ -11,6 +11,17 @@ vi.mock('../../api/sessions.js', () => ({
   fetchSessionsByAthlete: vi.fn(),
 }));
 
+vi.mock('../../components/NdjsonUploadModal.jsx', () => ({
+  default: ({ open, onClose, onSuccess }) => (
+    open ? (
+      <div data-testid="upload-modal">
+        <button onClick={onClose}>Close Modal</button>
+        <button onClick={onSuccess}>Success</button>
+      </div>
+    ) : null
+  ),
+}));
+
 import { fetchAthletes } from '../../api/athletes.js';
 import { fetchSessionsByAthlete } from '../../api/sessions.js';
 
@@ -135,6 +146,30 @@ describe('SessionsPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/no sessions found/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Upload Session button', () => {
+    it('shows upload session button', async () => {
+      fetchAthletes.mockResolvedValue([]);
+      renderPage();
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /upload session/i })).toBeInTheDocument();
+      });
+    });
+
+    it('opens upload modal when clicked', async () => {
+      fetchAthletes.mockResolvedValue([]);
+      renderPage();
+
+      let uploadBtn;
+      await waitFor(() => {
+        uploadBtn = screen.getByRole('button', { name: /upload session/i });
+        expect(uploadBtn).toBeInTheDocument();
+      });
+
+      fireEvent.click(uploadBtn);
+      expect(screen.getByTestId('upload-modal')).toBeInTheDocument();
     });
   });
 });

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { fetchAthletes } from '../api/athletes.js';
 import { fetchSessionsByAthlete } from '../api/sessions.js';
 import SessionList from '../components/SessionList.jsx';
+import NdjsonUploadModal from '../components/NdjsonUploadModal.jsx';
 
 export default function SessionsPage() {
   const [sessions, setSessions] = useState([]);
@@ -9,6 +10,7 @@ export default function SessionsPage() {
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
   const [sortDir, setSortDir] = useState('desc');
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -85,6 +87,12 @@ export default function SessionsPage() {
         }}
       >
         <h1 style={{ margin: 0 }}>Sessions</h1>
+        <button
+          className="btn-save"
+          onClick={() => setUploadOpen(true)}
+        >
+          Upload Session
+        </button>
       </div>
 
       {loading && (
@@ -129,6 +137,14 @@ export default function SessionsPage() {
       {!loading && !error && (
         <SessionList sessions={sessions} sortDir={sortDir} onSort={handleSort} />
       )}
+
+      <NdjsonUploadModal
+        open={uploadOpen}
+        onClose={() => setUploadOpen(false)}
+        onSuccess={() => {
+          setRetryCount((c) => c + 1);
+        }}
+      />
     </div>
   );
 }

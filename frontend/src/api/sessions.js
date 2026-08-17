@@ -22,3 +22,29 @@ export async function fetchSessionsByAthlete(athleteId, { from, to } = {}) {
   }
   return res.json();
 }
+
+/**
+ * Upload an NDJSON session file.
+ * @param {string} athleteId - The ID of the athlete.
+ * @param {File} file - The NDJSON file to upload.
+ * @returns {Promise<Object>} The uploaded session result containing session_id, status, and metrics.
+ */
+export async function uploadSession(athleteId, file) {
+  const formData = new FormData();
+  formData.append('athlete_id', athleteId);
+  formData.append('file', file);
+
+  const res = await apiClient('/sessions/upload', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw Object.assign(new Error(body.message ?? `HTTP ${res.status}`), {
+      status: res.status,
+      errorCode: body.error ?? null,
+    });
+  }
+  return res.json();
+}
