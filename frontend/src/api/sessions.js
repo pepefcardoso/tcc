@@ -48,3 +48,33 @@ export async function uploadSession(athleteId, file) {
   }
   return res.json();
 }
+
+/**
+ * Fetch a specific session by ID.
+ * @param {string} sessionId - The session ID.
+ * @returns {Promise<Object>}
+ */
+export async function fetchSession(sessionId) {
+  const res = await apiClient(`/sessions/${sessionId}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.message ?? `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+/**
+ * Fetch GPS samples for a session.
+ * @param {string} sessionId - The session ID.
+ * @param {number} [downsample=10] - Downsampling factor.
+ * @returns {Promise<Object>}
+ */
+export async function fetchSessionSamples(sessionId, downsample = 10) {
+  const qs = downsample ? `?downsample=${downsample}` : '';
+  const res = await apiClient(`/sessions/${sessionId}/samples${qs}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.message ?? `HTTP ${res.status}`);
+  }
+  return res.json();
+}

@@ -4,6 +4,7 @@ import DashboardPage from './pages/DashboardPage.jsx';
 import AthletesPage from './pages/AthletesPage.jsx';
 import SessionsPage from './pages/SessionsPage.jsx';
 import AthleteDetailPage from './pages/AthleteDetailPage.jsx';
+import SessionDetailPage from './pages/SessionDetailPage.jsx';
 import AthleteCreatePage from './pages/AthleteCreatePage.jsx';
 import AppLayout from './layouts/AppLayout.jsx';
 import AuthGuardPlaceholder from './components/AuthGuardPlaceholder.jsx';
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
       { path: '/athletes/new', element: <AthleteCreatePage /> },
       { path: '/athletes/:id', element: <AthleteDetailPage /> },
       { path: '/sessions', element: <SessionsPage /> },
+      { path: '/sessions/:id', element: <SessionDetailPage /> },
     ],
   },
 ]);
