@@ -1,0 +1,108 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-4);
+}
+
+.modal-content.athlete-edit-container {
+  width: 100%;
+  max-width: 560px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-6);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.athlete-edit-container h2 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-6);
+}
+
+.athlete-edit-container .form-group {
+  margin-bottom: var(--spacing-4);
+}
+
+.athlete-edit-container .form-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: var(--spacing-2);
+}
+
+.athlete-edit-container .form-group input {
+  width: 100%;
+  padding: var(--spacing-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: var(--text-base);
+}
+
+.athlete-edit-container .form-group input[aria-invalid="true"] {
+  border-color: var(--color-danger);
+}
+
+.athlete-edit-container .form-error {
+  display: block;
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+  margin-top: var(--spacing-1);
+}
+
+.athlete-edit-container .global-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: var(--spacing-3);
+  border-radius: var(--radius);
+  margin-bottom: var(--spacing-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.athlete-edit-container .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-4);
+  margin-top: var(--spacing-6);
+}
+
+.athlete-edit-container .btn-cancel {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  cursor: pointer;
+  padding: var(--spacing-2) var(--spacing-4);
+  font-family: inherit;
+}
+
+.athlete-edit-container .btn-cancel:hover {
+  text-decoration: underline;
+}
+
+.athlete-edit-container .btn-save {
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  padding: var(--spacing-2) var(--spacing-4);
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.athlete-edit-container .btn-save:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.athlete-edit-container .btn-save:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

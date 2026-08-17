@@ -34,3 +34,40 @@ export async function createAthlete(data) {
   }
   return res.json();
 }
+
+/**
+ * Update an existing athlete.
+ * @param {string} id - The athlete ID.
+ * @param {Object} data - The athlete data.
+ * @returns {Promise<Athlete>}
+ */
+export async function updateAthlete(id, data) {
+  const res = await apiClient(`/athletes/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw Object.assign(new Error(body.message ?? `HTTP ${res.status}`), {
+      status: res.status,
+      fields: body.fields ?? null,
+    });
+  }
+  return res.json();
+}
+
+/**
+ * Inactivate an athlete.
+ * @param {string} id - The athlete ID.
+ * @returns {Promise<boolean>}
+ */
+export async function inactivateAthlete(id) {
+  const res = await apiClient(`/athletes/${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.message ?? `HTTP ${res.status}`);
+  }
+  return true;
+}

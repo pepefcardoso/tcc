@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import './AthleteList.css';
 
-export default function AthleteList({ athletes = [] }) {
+export default function AthleteList({ athletes = [], onEdit, onInactivate }) {
   if (athletes.length === 0) {
     return (
       <div className="athlete-list-empty">
@@ -39,6 +39,16 @@ export default function AthleteList({ athletes = [] }) {
               </td>
               <td data-label="Actions" className="athlete-actions">
                 <Link to={`/athletes/${athlete.id || athlete.athlete_id}`}>View</Link>
+                {onEdit && (
+                  <button type="button" onClick={() => onEdit(athlete)} className="btn-text btn-edit">
+                    Edit
+                  </button>
+                )}
+                {onInactivate && athlete.active && (
+                  <button type="button" onClick={() => onInactivate(athlete.id || athlete.athlete_id)} className="btn-text btn-inactivate">
+                    Inactivate
+                  </button>
+                )}
               </td>
             </tr>
           ))}

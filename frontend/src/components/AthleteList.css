@@ -81,6 +81,34 @@
   text-decoration: underline;
 }
 
+.athlete-actions .btn-text {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  margin-left: var(--spacing-3);
+  padding: 0;
+  text-decoration: none;
+}
+
+.athlete-actions .btn-edit {
+  color: var(--color-accent);
+}
+
+.athlete-actions .btn-edit:hover {
+  text-decoration: underline;
+}
+
+.athlete-actions .btn-inactivate {
+  color: var(--color-danger);
+}
+
+.athlete-actions .btn-inactivate:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 767px) {
   .athlete-table thead {
     display: none;

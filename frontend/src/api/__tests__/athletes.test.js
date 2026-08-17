@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchAthletes, createAthlete } from '../athletes.js';
+import { fetchAthletes, createAthlete, updateAthlete, inactivateAthlete } from '../athletes.js';
 
 global.fetch = vi.fn();
 
@@ -87,6 +87,101 @@ describe('athletes API', () => {
       } catch (error) {
         expect(error.message).toBe('Forbidden');
         expect(error.status).toBe(403);
+      }
+    });
+  });
+
+  describe('updateAthlete', () => {
+    it('updates athlete successfully', async () => {
+      const payload = { name: 'Updated Athlete' };
+      const mockResponse = { id: '2', name: 'Updated Athlete', active: true };
+
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockResponse,
+      });
+
+      const data = await updateAthlete('2', payload);
+      expect(data).toEqual(mockResponse);
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/athletes/2'),
+        expect.objectContaining({
+          method: 'PATCH',
+          body: JSON.stringify(payload),
+        })
+      );
+    });
+
+    it('throws validation error with fields on 422', async () => {
+      const errorResponse = {
+        message: 'Validation failed',
+        fields: { name: 'Name must be 100 characters or fewer' },
+      };
+
+      fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 422,
+        json: async () => errorResponse,
+      });
+
+      try {
+        await updateAthlete('2', {});
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error.message).toBe('Validation failed');
+        expect(error.status).toBe(422);
+        expect(error.fields).toEqual({ name: 'Name must be 100 characters or fewer' });
+      }
+    });
+
+    it('throws generic error on other status codes', async () => {
+      fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: async () => ({ message: 'Not Found' }),
+      });
+
+      try {
+        await updateAthlete('99', {});
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error.message).toBe('Not Found');
+        expect(error.status).toBe(404);
+      }
+    });
+  });
+
+  describe('inactivateAthlete', () => {
+    it('inactivates athlete successfully', async () => {
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 204,
+        json: async () => ({}),
+      });
+
+      const result = await inactivateAthlete('2');
+      expect(result).toBe(true);
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/athletes/2'),
+        expect.objectContaining({
+          method: 'DELETE',
+        })
+      );
+    });
+
+    it('throws error on failure', async () => {
+      fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: async () => ({ message: 'Not Found' }),
+      });
+
+      try {
+        await inactivateAthlete('99');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error.message).toBe('Not Found');
       }
     });
   });

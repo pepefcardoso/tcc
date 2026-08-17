@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import AthleteList from '../AthleteList.jsx';
 
@@ -74,5 +74,38 @@ describe('AthleteList Component', () => {
     expect(screen.getByText('Missing Info')).toBeInTheDocument();
     const dashes = screen.getAllByText('-');
     expect(dashes.length).toBe(2);
+  });
+
+  it('calls onEdit when Edit button is clicked', async () => {
+    const onEdit = vi.fn();
+    const athletes = [{ id: '1', name: 'Test Athlete', active: true }];
+
+    renderWithRouter(<AthleteList athletes={athletes} onEdit={onEdit} />);
+    
+    const editButton = screen.getByRole('button', { name: /edit/i });
+    fireEvent.click(editButton);
+
+    expect(onEdit).toHaveBeenCalledWith(athletes[0]);
+  });
+
+  it('calls onInactivate when Inactivate button is clicked', async () => {
+    const onInactivate = vi.fn();
+    const athletes = [{ id: '1', name: 'Test Athlete', active: true }];
+
+    renderWithRouter(<AthleteList athletes={athletes} onInactivate={onInactivate} />);
+    
+    const inactivateButton = screen.getByRole('button', { name: /inactivate/i });
+    fireEvent.click(inactivateButton);
+
+    expect(onInactivate).toHaveBeenCalledWith('1');
+  });
+
+  it('does not render Inactivate button for inactive athletes', () => {
+    const onInactivate = vi.fn();
+    const athletes = [{ id: '2', name: 'Inactive Athlete', active: false }];
+
+    renderWithRouter(<AthleteList athletes={athletes} onInactivate={onInactivate} />);
+    
+    expect(screen.queryByRole('button', { name: /inactivate/i })).not.toBeInTheDocument();
   });
 });

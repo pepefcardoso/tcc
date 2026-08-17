@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchAthletes } from '../api/athletes.js';
+import { fetchAthletes, inactivateAthlete } from '../api/athletes.js';
 import AthleteList from '../components/AthleteList.jsx';
+import AthleteEditModal from '../components/AthleteEditModal.jsx';
 
 export default function AthletesPage() {
   const [athletes, setAthletes] = useState([]);
@@ -9,6 +10,7 @@ export default function AthletesPage() {
   const [error, setError] = useState(null);
   const [includeInactive, setIncludeInactive] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [editingAthlete, setEditingAthlete] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -38,6 +40,47 @@ export default function AthletesPage() {
       mounted = false;
     };
   }, [includeInactive, retryCount]);
+
+  const handleEdit = (athlete) => {
+    setEditingAthlete(athlete);
+  };
+
+  const handleEditClose = () => {
+    setEditingAthlete(null);
+  };
+
+  const handleEditSaved = (updatedAthlete) => {
+    setAthletes((prev) =>
+      prev.map((a) => {
+        const idA = a.id || a.athlete_id;
+        const idU = updatedAthlete.id || updatedAthlete.athlete_id;
+        return idA === idU ? updatedAthlete : a;
+      })
+    );
+    setEditingAthlete(null);
+  };
+
+  const handleInactivate = async (id) => {
+    if (!window.confirm('Are you sure you want to inactivate this athlete?')) {
+      return;
+    }
+    
+    try {
+      await inactivateAthlete(id);
+      
+      setAthletes((prev) => {
+        if (!includeInactive) {
+          return prev.filter((a) => (a.id || a.athlete_id) !== id);
+        }
+        return prev.map((a) => {
+          const idA = a.id || a.athlete_id;
+          return idA === id ? { ...a, active: false } : a;
+        });
+      });
+    } catch (err) {
+      setError(err.message || 'Failed to inactivate athlete');
+    }
+  };
 
   return (
     <div className="athletes-page">
@@ -76,8 +119,18 @@ export default function AthletesPage() {
       )}
 
       {!loading && !error && (
-        <AthleteList athletes={athletes} />
+        <AthleteList 
+          athletes={athletes} 
+          onEdit={handleEdit} 
+          onInactivate={handleInactivate} 
+        />
       )}
+
+      <AthleteEditModal 
+        athlete={editingAthlete} 
+        onClose={handleEditClose} 
+        onSaved={handleEditSaved} 
+      />
     </div>
   );
 }
