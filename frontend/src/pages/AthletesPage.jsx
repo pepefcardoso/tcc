@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchAthletes } from '../api/athletes.js';
 import AthleteList from '../components/AthleteList.jsx';
 
@@ -42,6 +43,7 @@ export default function AthletesPage() {
     <div className="athletes-page">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h1 style={{ margin: 0 }}>Athletes</h1>
+        <Link to="/athletes/new" className="btn-primary" style={{ padding: '0.5rem 1rem', background: 'var(--color-primary)', color: 'white', textDecoration: 'none', borderRadius: 'var(--radius)' }}>+ Add Athlete</Link>
       </div>
       
       <div className="athletes-toolbar" style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
