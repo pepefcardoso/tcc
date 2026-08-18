@@ -4,14 +4,20 @@ import { fetchSession, fetchSessionSamples } from '../api/sessions.js';
 import VelocityChart from '../components/VelocityChart.jsx';
 import RouteMap from '../components/RouteMap.jsx';
 import PlayerLoadChart from '../components/PlayerLoadChart.jsx';
+import PseForm from '../components/PseForm.jsx';
 import './SessionDetailPage.css';
 
 export default function SessionDetailPage() {
   const { id } = useParams();
   const [session, setSession] = useState(null);
+  const [sessionLoad, setSessionLoad] = useState(null);
   const [gps, setGps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const handlePseSuccess = (result) => {
+    setSessionLoad(result.session_load);
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -26,6 +32,7 @@ export default function SessionDetailPage() {
         ]);
         if (mounted) {
           setSession(sessionData);
+          setSessionLoad(sessionData.session_load ?? null);
           setGps(samplesData.gps ?? []);
         }
       } catch (err) {
@@ -81,6 +88,17 @@ export default function SessionDetailPage() {
           value={session?.battery_pct_end != null ? `${session.battery_pct_end}%` : 'N/A'}
         />
       </div>
+
+      <section aria-labelledby="pse-heading" className="session-detail__section">
+        <h2 id="pse-heading">Perceived Exertion (PSE)</h2>
+        <div className="session-detail__metrics">
+          <MetricCard
+            label="Session Load"
+            value={sessionLoad != null ? sessionLoad.toFixed(1) : '—'}
+          />
+        </div>
+        <PseForm sessionId={id} initialPse={session?.pse ?? null} onSuccess={handlePseSuccess} />
+      </section>
 
       <section aria-labelledby="map-heading" className="session-detail__section">
         <h2 id="map-heading">Route Map</h2>

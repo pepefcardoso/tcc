@@ -1,0 +1,64 @@
+.pse-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  max-width: 320px;
+}
+
+.pse-form__label {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pse-form__select {
+  width: 100%;
+  padding: var(--spacing-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-base);
+  transition: border-color 0.2s;
+}
+
+.pse-form__select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.pse-form__button {
+  padding: var(--spacing-2) var(--spacing-4);
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.pse-form__button:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.pse-form__button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.pse-form__error {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-danger);
+}
+
+.pse-form__success {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-success);
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { uploadSession, fetchSession, fetchSessionSamples } from '../sessions.js';
+import { uploadSession, fetchSession, fetchSessionSamples, patchSessionPse } from '../sessions.js';
 import apiClient from '../client.js';
 
 vi.mock('../client.js', () => ({
@@ -138,5 +138,60 @@ describe('sessions API - fetchSessionSamples', () => {
     });
 
     await expect(fetchSessionSamples('s1')).rejects.toThrow('Internal Server Error');
+  });
+});
+
+describe('sessions API - patchSessionPse', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('calls PATCH /sessions/:id/pse with correct body', async () => {
+    const mockResponse = { session_id: 's1', pse: 7, session_load: 630, acwr: { value: null, zone: null } };
+    apiClient.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockResponse),
+    });
+
+    const result = await patchSessionPse('s1', 7);
+    
+    expect(apiClient).toHaveBeenCalledTimes(1);
+    const [path, options] = apiClient.mock.calls[0];
+    
+    expect(path).toBe('/sessions/s1/pse');
+    expect(options.method).toBe('PATCH');
+    expect(options.body).toBe(JSON.stringify({ pse: 7 }));
+    expect(result).toEqual(mockResponse);
+  });
+
+  it('throws enriched error on non-ok response', async () => {
+    apiClient.mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: () => Promise.resolve({ message: 'PSE must be an integer between 1 and 10 inclusive', error: 'invalid_pse_range' }),
+    });
+
+    await expect(patchSessionPse('s1', 11)).rejects.toThrow('PSE must be an integer between 1 and 10 inclusive');
+    
+    try {
+      await patchSessionPse('s1', 11);
+    } catch (err) {
+      expect(err.status).toBe(422);
+      expect(err.errorCode).toBe('invalid_pse_range');
+    }
+  });
+
+  it('throws standard error on 404', async () => {
+    apiClient.mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: () => Promise.resolve({ message: 'Session not found', error: 'session_not_found' }),
+    });
+
+    await expect(patchSessionPse('unknown', 7)).rejects.toThrow('Session not found');
   });
 });

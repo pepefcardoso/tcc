@@ -78,3 +78,25 @@ export async function fetchSessionSamples(sessionId, downsample = 10) {
   }
   return res.json();
 }
+
+/**
+ * Update the Perceived Exertion (PSE) for a session.
+ * @param {string} sessionId - The session ID.
+ * @param {number} pse - The PSE value (1-10).
+ * @returns {Promise<Object>} The updated session data including session_load and acwr.
+ */
+export async function patchSessionPse(sessionId, pse) {
+  const res = await apiClient(`/sessions/${sessionId}/pse`, {
+    method: 'PATCH',
+    body: JSON.stringify({ pse }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw Object.assign(new Error(body.message ?? `HTTP ${res.status}`), {
+      status: res.status,
+      errorCode: body.error ?? null,
+    });
+  }
+  return res.json();
+}

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import SessionDetailPage from '../SessionDetailPage.jsx';
@@ -12,6 +12,15 @@ vi.mock('../../api/sessions.js', () => ({
 vi.mock('../../components/VelocityChart.jsx', () => ({
   default: ({ gps }) => (
     <div data-testid="mock-velocity-chart">VelocityChart Mock - {gps?.length || 0} samples</div>
+  ),
+}));
+
+vi.mock('../../components/PseForm.jsx', () => ({
+  default: ({ sessionId, initialPse, onSuccess }) => (
+    <div data-testid="mock-pse-form">
+      PseForm Mock - session:{sessionId} - initialPse:{initialPse}
+      <button onClick={() => onSuccess({ session_load: 630 })}>Simulate PSE Success</button>
+    </div>
   ),
 }));
 
@@ -72,6 +81,8 @@ describe('SessionDetailPage', () => {
         sprint_count: 5,
         player_load: 120.45,
       },
+      pse: 7,
+      session_load: 630.0,
     });
 
     fetchSessionSamples.mockResolvedValue({
@@ -88,6 +99,12 @@ describe('SessionDetailPage', () => {
     expect(screen.getByText('28.5 km/h')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
     expect(screen.getByText('120.5')).toBeInTheDocument();
+
+    expect(screen.getByText('Perceived Exertion (PSE)')).toBeInTheDocument();
+    expect(screen.getByText('630.0')).toBeInTheDocument();
+    expect(screen.getByTestId('mock-pse-form')).toHaveTextContent(
+      'PseForm Mock - session:123 - initialPse:7'
+    );
 
     expect(screen.getByTestId('mock-velocity-chart')).toHaveTextContent('1 samples');
     expect(screen.getByTestId('mock-player-load-chart')).toHaveTextContent('1 samples - PL:120.45');
@@ -108,7 +125,7 @@ describe('SessionDetailPage', () => {
     });
 
     const dashes = screen.getAllByText('—');
-    expect(dashes.length).toBe(4);
+    expect(dashes.length).toBe(5);
 
     expect(screen.getByTestId('mock-player-load-chart')).toHaveTextContent('0 samples - PL:');
   });
@@ -148,8 +165,32 @@ describe('SessionDetailPage', () => {
     });
 
     expect(screen.getByText('88%')).toBeInTheDocument();
-    
+
     const naLabels = screen.getAllByText('N/A');
     expect(naLabels.length).toBe(1);
+  });
+
+  it('updates session load inline when PSE form succeeds', async () => {
+    fetchSession.mockResolvedValue({
+      id: '123',
+      metrics: null,
+      session_load: null,
+      pse: null,
+    });
+    fetchSessionSamples.mockResolvedValue({ gps: [] });
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Session Detail')).toBeInTheDocument();
+    });
+
+    expect(screen.getAllByText('—').length).toBe(5);
+
+    fireEvent.click(screen.getByText('Simulate PSE Success'));
+
+    await waitFor(() => {
+      expect(screen.getByText('630.0')).toBeInTheDocument();
+    });
   });
 });
