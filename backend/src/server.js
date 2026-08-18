@@ -3,7 +3,11 @@ import app from './app.js';
 
 const PORT = env.PORT;
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, (err) => {
+  if (err) {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  }
   // eslint-disable-next-line no-console
   console.log(`Server running on port ${PORT}`);
 });
