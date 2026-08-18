@@ -49,6 +49,8 @@ export async function findByFilename(filename, pool = defaultPool) {
     source_filename: row.source_filename,
     sync_status: row.sync_status,
     created_at: row.created_at,
+    battery_pct_start: row.battery_pct_start != null ? parseInt(row.battery_pct_start, 10) : null,
+    battery_pct_end: row.battery_pct_end != null ? parseInt(row.battery_pct_end, 10) : null,
     metrics,
   };
 }
@@ -260,6 +262,8 @@ export async function findById(id, pool = defaultPool) {
     source_filename: row.source_filename,
     sync_status: row.sync_status,
     created_at: row.created_at,
+    battery_pct_start: row.battery_pct_start != null ? parseInt(row.battery_pct_start, 10) : null,
+    battery_pct_end: row.battery_pct_end != null ? parseInt(row.battery_pct_end, 10) : null,
     metrics,
   };
 }
@@ -380,6 +384,8 @@ export async function findByAthleteId(athleteId, { from, to } = {}, pool = defau
       source_filename: row.source_filename,
       sync_status: row.sync_status,
       created_at: row.created_at,
+      battery_pct_start: row.battery_pct_start != null ? parseInt(row.battery_pct_start, 10) : null,
+      battery_pct_end: row.battery_pct_end != null ? parseInt(row.battery_pct_end, 10) : null,
       metrics,
     };
   });

@@ -112,4 +112,44 @@ describe('SessionDetailPage', () => {
 
     expect(screen.getByTestId('mock-player-load-chart')).toHaveTextContent('0 samples - PL:');
   });
+
+  it('renders battery fields when present', async () => {
+    fetchSession.mockResolvedValue({
+      id: '123',
+      battery_pct_start: 95,
+      battery_pct_end: 72,
+      metrics: null,
+    });
+    fetchSessionSamples.mockResolvedValue({ gps: [] });
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Session Detail')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('95%')).toBeInTheDocument();
+    expect(screen.getByText('72%')).toBeInTheDocument();
+  });
+
+  it('renders fallback for partial battery fields', async () => {
+    fetchSession.mockResolvedValue({
+      id: '123',
+      battery_pct_start: 88,
+      battery_pct_end: null,
+      metrics: null,
+    });
+    fetchSessionSamples.mockResolvedValue({ gps: [] });
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Session Detail')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('88%')).toBeInTheDocument();
+    
+    const naLabels = screen.getAllByText('N/A');
+    expect(naLabels.length).toBe(1);
+  });
 });

@@ -72,6 +72,14 @@ export default function SessionDetailPage() {
           label="Player Load"
           value={m?.player_load != null ? m.player_load.toFixed(1) : '—'}
         />
+        <MetricCard
+          label="Battery Start"
+          value={session?.battery_pct_start != null ? `${session.battery_pct_start}%` : 'N/A'}
+        />
+        <MetricCard
+          label="Battery End"
+          value={session?.battery_pct_end != null ? `${session.battery_pct_end}%` : 'N/A'}
+        />
       </div>
 
       <section aria-labelledby="map-heading" className="session-detail__section">
