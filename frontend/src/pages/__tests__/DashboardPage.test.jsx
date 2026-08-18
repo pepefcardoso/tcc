@@ -36,6 +36,7 @@ describe('DashboardPage', () => {
     renderWithRouter(<DashboardPage />);
     await waitFor(() => {
       expect(screen.getByText(/no active athletes/i)).toBeInTheDocument();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
   });
 

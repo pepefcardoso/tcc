@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { fetchDashboard } from '../api/athletes.js';
 import AthleteCard from '../components/AthleteCard.jsx';
+import AcwrAlertBanner from '../components/AcwrAlertBanner.jsx';
 import './DashboardPage.css';
 
 export default function DashboardPage() {
@@ -40,11 +41,7 @@ export default function DashboardPage() {
     <div className="dashboard-page">
       <h1>Team Dashboard</h1>
       
-      {highRiskAthletes.length > 0 && (
-        <div className="dashboard-alert-banner">
-          ⚠️ High Risk Alert (ACWR &gt; 1.50): {highRiskAthletes.map(a => a.name).join(', ')}
-        </div>
-      )}
+      <AcwrAlertBanner athletes={highRiskAthletes} />
 
       {athletes.length === 0 ? (
         <p className="dashboard-empty">No active athletes.</p>

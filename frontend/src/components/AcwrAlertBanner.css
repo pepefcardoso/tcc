@@ -1,0 +1,53 @@
+.acwr-alert-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  background-color: var(--color-acwr-red-bg);
+  color: var(--color-acwr-red);
+  padding: var(--spacing-4) var(--spacing-6);
+  margin-bottom: var(--spacing-6);
+  border-radius: var(--radius);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-left: 4px solid var(--color-acwr-red);
+}
+
+.acwr-alert-banner__icon {
+  font-size: var(--text-lg);
+  flex-shrink: 0;
+  margin-top: 0.1em;
+}
+
+.acwr-alert-banner__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.acwr-alert-banner__title {
+  font-weight: 600;
+  font-size: var(--text-base);
+}
+
+.acwr-alert-banner__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+.acwr-alert-banner__item {
+  display: inline;
+}
+
+.acwr-alert-banner__link {
+  color: var(--color-acwr-red);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.acwr-alert-banner__link:hover {
+  opacity: 0.75;
+}

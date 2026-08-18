@@ -11,16 +11,6 @@
   color: var(--color-text);
 }
 
-.dashboard-alert-banner {
-  background-color: var(--color-acwr-red-bg);
-  color: var(--color-acwr-red);
-  padding: var(--spacing-4);
-  margin-bottom: var(--spacing-6);
-  border-radius: var(--radius);
-  border: 1px solid rgba(220, 38, 38, 0.2);
-  font-weight: 500;
-}
-
 .athlete-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
