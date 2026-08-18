@@ -85,3 +85,16 @@ export async function fetchAthleteAcwr(athleteId) {
   }
   return res.json();
 }
+
+/**
+ * Fetch the dashboard summary.
+ * @returns {Promise<{athletes: Array, high_risk_athlete_ids: string[]}>}
+ */
+export async function fetchDashboard() {
+  const res = await apiClient('/dashboard');
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.message ?? `HTTP ${res.status}`);
+  }
+  return res.json();
+}

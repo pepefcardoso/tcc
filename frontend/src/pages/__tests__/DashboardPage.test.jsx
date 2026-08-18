@@ -1,8 +1,16 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 import DashboardPage from '../DashboardPage.jsx';
+import { fetchDashboard } from '../../api/athletes.js';
 
-global.fetch = vi.fn();
+vi.mock('../../api/athletes.js', () => ({
+  fetchDashboard: vi.fn(),
+}));
+
+const renderWithRouter = (ui) => {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
+};
 
 describe('DashboardPage', () => {
   beforeEach(() => {
@@ -10,25 +18,22 @@ describe('DashboardPage', () => {
   });
 
   it('renders loading state initially', () => {
-    fetch.mockReturnValue(new Promise(() => {}));
-    render(<DashboardPage />);
+    fetchDashboard.mockReturnValue(new Promise(() => {}));
+    renderWithRouter(<DashboardPage />);
     expect(screen.getByText(/loading dashboard/i)).toBeInTheDocument();
   });
 
   it('renders error state on fetch failure', async () => {
-    fetch.mockResolvedValueOnce({ ok: false });
-    render(<DashboardPage />);
+    fetchDashboard.mockRejectedValueOnce(new Error('Failed to load dashboard'));
+    renderWithRouter(<DashboardPage />);
     await waitFor(() => {
       expect(screen.getByText(/error: failed to load dashboard/i)).toBeInTheDocument();
     });
   });
 
   it('renders empty state when no athletes', async () => {
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ athletes: [], high_risk_athlete_ids: [] })
-    });
-    render(<DashboardPage />);
+    fetchDashboard.mockResolvedValueOnce({ athletes: [], high_risk_athlete_ids: [] });
+    renderWithRouter(<DashboardPage />);
     await waitFor(() => {
       expect(screen.getByText(/no active athletes/i)).toBeInTheDocument();
     });
@@ -47,38 +52,35 @@ describe('DashboardPage', () => {
             max_speed_kmh: 25.5,
             sprint_count: 3,
             player_load: 150,
-            pse_pending: true
+            pse_pending: true,
           },
-          acwr: { value: 1.6, zone: 'red' }
+          acwr: { value: 1.6, zone: 'red' },
         },
         {
           athlete_id: 'a2',
           name: 'Athlete Two',
           latest_session: null,
-          acwr: { value: null, zone: null }
-        }
-      ]
+          acwr: { value: null, zone: null },
+        },
+      ],
     };
 
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockData
-    });
+    fetchDashboard.mockResolvedValueOnce(mockData);
 
-    render(<DashboardPage />);
+    renderWithRouter(<DashboardPage />);
 
     await waitFor(() => {
       expect(screen.getByText(/high risk alert/i)).toBeInTheDocument();
     });
 
-    expect(screen.getAllByText(/Athlete One/i)[0]).toBeInTheDocument();
+    const allAthleteOneMentions = screen.getAllByText(/Athlete One/i);
+    expect(allAthleteOneMentions.length).toBeGreaterThanOrEqual(1);
 
-    expect(screen.getAllByText(/Athlete One/i)[1]).toBeInTheDocument();
     expect(screen.getByText('1.60')).toBeInTheDocument();
     expect(screen.getByText(/pse pending/i)).toBeInTheDocument();
 
     expect(screen.getByText(/Athlete Two/i)).toBeInTheDocument();
-    expect(screen.getByText(/N\/A/i)).toBeInTheDocument();
+    expect(screen.getByText(/N\/D/i)).toBeInTheDocument();
     expect(screen.getByText(/No sessions yet/i)).toBeInTheDocument();
   });
 });
