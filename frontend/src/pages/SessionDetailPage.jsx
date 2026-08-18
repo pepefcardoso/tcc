@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { fetchSession, fetchSessionSamples } from '../api/sessions.js';
 import VelocityChart from '../components/VelocityChart.jsx';
 import RouteMap from '../components/RouteMap.jsx';
+import PlayerLoadChart from '../components/PlayerLoadChart.jsx';
 import './SessionDetailPage.css';
 
 export default function SessionDetailPage() {
@@ -57,7 +58,6 @@ export default function SessionDetailPage() {
       </Link>
       <h1 className="session-detail__title">Session Detail</h1>
 
-      {/* Metrics header strip */}
       <div className="session-detail__metrics">
         <MetricCard
           label="Distance"
@@ -74,16 +74,19 @@ export default function SessionDetailPage() {
         />
       </div>
 
-      {/* Map section */}
       <section aria-labelledby="map-heading" className="session-detail__section">
         <h2 id="map-heading">Route Map</h2>
         <RouteMap gps={gps} />
       </section>
 
-      {/* Velocity chart section */}
       <section aria-labelledby="velocity-heading" className="session-detail__section">
         <h2 id="velocity-heading">Speed Over Time</h2>
         <VelocityChart gps={gps} />
+      </section>
+
+      <section aria-labelledby="player-load-heading" className="session-detail__section">
+        <h2 id="player-load-heading">Player Load Accumulation</h2>
+        <PlayerLoadChart gps={gps} totalPlayerLoad={m?.player_load ?? null} />
       </section>
     </div>
   );

@@ -15,6 +15,14 @@ vi.mock('../../components/VelocityChart.jsx', () => ({
   ),
 }));
 
+vi.mock('../../components/PlayerLoadChart.jsx', () => ({
+  default: ({ gps, totalPlayerLoad }) => (
+    <div data-testid="mock-player-load-chart">
+      PlayerLoadChart Mock - {gps?.length || 0} samples - PL:{totalPlayerLoad}
+    </div>
+  ),
+}));
+
 describe('SessionDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -82,6 +90,7 @@ describe('SessionDetailPage', () => {
     expect(screen.getByText('120.5')).toBeInTheDocument();
 
     expect(screen.getByTestId('mock-velocity-chart')).toHaveTextContent('1 samples');
+    expect(screen.getByTestId('mock-player-load-chart')).toHaveTextContent('1 samples - PL:120.45');
   });
 
   it('renders fallback dashes when metrics are null', async () => {
@@ -100,5 +109,7 @@ describe('SessionDetailPage', () => {
 
     const dashes = screen.getAllByText('—');
     expect(dashes.length).toBe(4);
+
+    expect(screen.getByTestId('mock-player-load-chart')).toHaveTextContent('0 samples - PL:');
   });
 });

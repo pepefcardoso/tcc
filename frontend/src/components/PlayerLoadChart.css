@@ -1,0 +1,12 @@
+.player-load-chart {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-4);
+}
+
+.player-load-chart__empty {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: var(--spacing-8);
+}
