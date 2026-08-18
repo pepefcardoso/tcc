@@ -1,0 +1,51 @@
+.acwr-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  border-radius: 9999px;
+  line-height: 1;
+}
+
+.acwr-badge--md {
+  font-size: var(--text-sm);
+  padding: var(--spacing-1) var(--spacing-3);
+  min-width: 3rem;
+}
+
+.acwr-badge--sm {
+  font-size: 0.75rem;
+  padding: 0.125rem var(--spacing-2);
+  min-width: 2.5rem;
+}
+
+.acwr-badge--blue {
+  color: var(--color-acwr-blue);
+  background-color: var(--color-acwr-blue-bg);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.acwr-badge--green {
+  color: var(--color-acwr-green);
+  background-color: var(--color-acwr-green-bg);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+}
+
+.acwr-badge--yellow {
+  color: var(--color-acwr-yellow);
+  background-color: var(--color-acwr-yellow-bg);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+.acwr-badge--red {
+  color: var(--color-acwr-red);
+  background-color: var(--color-acwr-red-bg);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.acwr-badge--none {
+  color: var(--color-text-muted);
+  background-color: var(--color-border);
+  border: 1px solid transparent;
+}

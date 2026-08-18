@@ -10,6 +10,16 @@
   --color-text-muted: #64748b;
   --color-border: #e2e8f0;
 
+  --color-acwr-blue: #3b82f6;
+  --color-acwr-green: #16a34a;
+  --color-acwr-yellow: #d97706;
+  --color-acwr-red: #dc2626;
+
+  --color-acwr-blue-bg: #eff6ff;
+  --color-acwr-green-bg: #f0fdf4;
+  --color-acwr-yellow-bg: #fffbeb;
+  --color-acwr-red-bg: #fef2f2;
+
   --font-sans: 'Inter', sans-serif;
   --text-sm: 0.875rem;
   --text-base: 1rem;
