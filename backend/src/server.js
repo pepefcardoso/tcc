@@ -23,3 +23,9 @@ process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
   server.close(() => process.exit(1));
 });
+
+process.on('SIGTERM', () => {
+  // eslint-disable-next-line no-console
+  console.log('SIGTERM received — shutting down gracefully');
+  server.close(() => process.exit(0));
+});
