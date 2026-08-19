@@ -4,10 +4,11 @@ import { comparePassword } from '../utils/password.js';
 import { signUserToken } from '../utils/jwt.js';
 import { validate } from '../middleware/validate.js';
 import { loginSchema } from '../schemas/auth.schema.js';
+import { loginLimiter } from '../middleware/rateLimiter.js';
 
 const router = Router();
 
-router.post('/login', validate(loginSchema), async (req, res, next) => {
+router.post('/login', loginLimiter, validate(loginSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body;
 

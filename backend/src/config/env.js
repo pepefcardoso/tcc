@@ -23,6 +23,12 @@ const envSchema = z
     // Processing
     GPS_BATCH_INSERT_SIZE: z.coerce.number().int().positive().default(500),
     IMU_BATCH_INSERT_SIZE: z.coerce.number().int().positive().default(1000),
+
+    // Rate Limiting
+    RATE_LIMIT_LOGIN_WINDOW_MS: z.coerce.number().int().positive().default(900000),
+    RATE_LIMIT_LOGIN_MAX: z.coerce.number().int().positive().default(10),
+    RATE_LIMIT_UPLOAD_WINDOW_MS: z.coerce.number().int().positive().default(900000),
+    RATE_LIMIT_UPLOAD_MAX: z.coerce.number().int().positive().default(30),
   })
   .refine((data) => data.JWT_USER_SECRET !== data.JWT_DEVICE_SECRET, {
     message: 'JWT_USER_SECRET and JWT_DEVICE_SECRET must be different',

@@ -14,6 +14,7 @@ import * as uploadService from '../services/uploadService.js';
 import { calculateAcwr, classifyAcwrZone } from '../services/acwrService.js';
 import { requireRole } from '../middleware/role.js';
 import { pseSchema } from '../schemas/pse.schema.js';
+import { uploadLimiter } from '../middleware/rateLimiter.js';
 
 const router = Router();
 
@@ -35,6 +36,7 @@ function handleMulterError(err, req, res, next) {
 
 router.post(
   '/upload',
+  uploadLimiter,
   authMiddleware,
   requireDeviceOrOperator,
   (req, res, next) =>
