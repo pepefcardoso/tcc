@@ -14,7 +14,9 @@
     "lint:fix": "eslint src/ --fix",
     "format": "prettier --write src/ index.html",
     "format:check": "prettier --check src/ index.html",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
@@ -26,6 +28,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.43.1",
     "@testing-library/jest-dom": "^6.4.5",
     "@testing-library/react": "^15.0.7",
     "@vitejs/plugin-react": "^4.3.0",
