@@ -29,6 +29,9 @@ const envSchema = z
     RATE_LIMIT_LOGIN_MAX: z.coerce.number().int().positive().default(10),
     RATE_LIMIT_UPLOAD_WINDOW_MS: z.coerce.number().int().positive().default(900000),
     RATE_LIMIT_UPLOAD_MAX: z.coerce.number().int().positive().default(30),
+
+    // Security
+    CORS_ALLOWED_ORIGIN: z.string().url('CORS_ALLOWED_ORIGIN must be a valid URL').default('http://localhost:5173'),
   })
   .refine((data) => data.JWT_USER_SECRET !== data.JWT_DEVICE_SECRET, {
     message: 'JWT_USER_SECRET and JWT_DEVICE_SECRET must be different',
