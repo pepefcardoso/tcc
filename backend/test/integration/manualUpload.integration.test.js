@@ -179,6 +179,22 @@ describe('Manual Upload Integration', () => {
 
     expect(res.status).toBe(413);
 
+    const targetTempPath = path.join(env.UPLOAD_TMP_DIR, 'oversized_temp.ndjson');
+    expect(fs.existsSync(targetTempPath)).toBe(false);
+
     fs.unlinkSync(tempOversizedPath);
+  });
+
+  it('should return 415 for a file with a non-ndjson extension', async () => {
+    const wrongTypePath = path.join(process.cwd(), 'test', 'fixtures', 'wrong_type.txt');
+
+    const res = await request(app)
+      .post('/api/sessions/upload')
+      .set('Authorization', `Bearer ${tecnicoToken}`)
+      .field('athlete_id', athleteId)
+      .attach('file', wrongTypePath, { contentType: 'text/plain' });
+
+    expect(res.status).toBe(415);
+    expect(res.body.error).toBe('unsupported_media_type');
   });
 });

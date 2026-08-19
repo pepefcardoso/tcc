@@ -7,8 +7,9 @@ fs.mkdirSync(env.UPLOAD_TMP_DIR, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, env.UPLOAD_TMP_DIR),
-  filename: (_req, file, cb) => {
+  filename: (req, file, cb) => {
     const sanitized = path.basename(file.originalname);
+    req._uploadTempFilename = sanitized;
     cb(null, sanitized);
   },
 });

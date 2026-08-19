@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Router } from 'express';
 import multer from 'multer';
+import { env } from '../config/env.js';
 import { authMiddleware, requireDeviceOrOperator } from '../middleware/auth.js';
 import { upload } from '../middleware/multerUpload.js';
 import { validate } from '../middleware/validate.js';
@@ -25,6 +26,10 @@ const router = Router();
 function handleMulterError(err, req, res, next) {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
+      if (req._uploadTempFilename) {
+        const partialPath = path.join(env.UPLOAD_TMP_DIR, req._uploadTempFilename);
+        fs.unlink(partialPath, () => {});
+      }
       return next(new AppError(413, 'file_too_large', 'Uploaded file exceeds the size limit'));
     }
     if (err.code === 'WRONG_TYPE') {
